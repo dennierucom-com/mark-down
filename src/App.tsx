@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -7,9 +7,28 @@ import 'highlight.js/styles/github-dark.css';
 import './App.css';
 
 function App() {
-  const [markdownContent, setMarkdownContent] = useState<string>(sampleMarkdown);
-  const [fileName, setFileName] = useState<string>('sample.md');
+  const [markdownContent, setMarkdownContent] = useState<string>(() => {
+    return localStorage.getItem('markdown_content') || sampleMarkdown;
+  });
+  const [fileName, setFileName] = useState<string>(() => {
+    return localStorage.getItem('markdown_filename') || 'sample.md';
+  });
+  const [filePath, setFilePath] = useState<string>(() => {
+    return localStorage.getItem('markdown_path') || '';
+  });
   const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  useEffect(() => {
+    localStorage.setItem('markdown_content', markdownContent);
+  }, [markdownContent]);
+
+  useEffect(() => {
+    localStorage.setItem('markdown_filename', fileName);
+  }, [fileName]);
+
+  useEffect(() => {
+    localStorage.setItem('markdown_path', filePath);
+  }, [filePath]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -26,6 +45,9 @@ function App() {
       const content = e.target?.result as string;
       setMarkdownContent(content);
       setFileName(file.name);
+      // Try to get path if available (e.g. Electron), otherwise fallback to name
+      const path = (file as any).path || file.name;
+      setFilePath(path);
     };
     reader.readAsText(file);
   };
@@ -55,6 +77,7 @@ function App() {
   const resetToSample = () => {
     setMarkdownContent(sampleMarkdown);
     setFileName('sample.md');
+    setFilePath('');
   };
 
   return (
