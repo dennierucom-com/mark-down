@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -8,6 +8,7 @@ import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import 'highlight.js/styles/github-dark.css'; // Or dynamically switch based on theme
 import type { Components } from 'react-markdown';
+import { useSearch } from '../context/SearchContext';
 
 interface MarkdownReaderProps {
     content: string;
@@ -16,6 +17,8 @@ interface MarkdownReaderProps {
 const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
     const theme = useTheme();
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const { searchTerm, setTotalMatches, currentMatchIndex } = useSearch();
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
@@ -27,6 +30,66 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
                 setIsFullscreen(false);
             }
         }
+    };
+
+    // Effect to count matches and handle navigation
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        // Give React time to render the marks
+        const timeout = setTimeout(() => {
+            const matches = containerRef.current?.querySelectorAll('mark');
+            if (matches) {
+                setTotalMatches(matches.length);
+
+                // Apply active class and scroll
+                matches.forEach((match, index) => {
+                    if (index === currentMatchIndex) {
+                        match.style.backgroundColor = '#ff9800'; // Orange for active
+                        match.style.color = 'black';
+                        match.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } else {
+                        match.style.backgroundColor = '#ffeb3b'; // Yellow for others
+                        match.style.color = 'black';
+                    }
+                });
+            }
+        }, 100);
+
+        return () => clearTimeout(timeout);
+    }, [content, searchTerm, currentMatchIndex, setTotalMatches]);
+
+
+    // Helper to highlight text
+    const HighlightText = ({ text }: { text: string }) => {
+        if (!searchTerm || !text) return <>{text}</>;
+
+        const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
+        return (
+            <>
+                {parts.map((part, i) =>
+                    part.toLowerCase() === searchTerm.toLowerCase() ? (
+                        <mark key={i} style={{ backgroundColor: '#ffeb3b', color: 'black', borderRadius: 2 }}>{part}</mark>
+                    ) : (
+                        part
+                    )
+                )}
+            </>
+        );
+    };
+
+    // Wrapper for text-containing elements
+    const TextWrapper = ({ children }: { children: React.ReactNode }) => {
+        return (
+            <>
+                {React.Children.map(children, child => {
+                    if (typeof child === 'string') {
+                        return <HighlightText text={child} />;
+                    }
+                    return child;
+                })}
+            </>
+        );
     };
 
     // Custom renderer for code blocks to add copy functionality
@@ -87,11 +150,20 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
                     {children}
                 </code>
             );
-        }
+        },
+        p: ({ children }) => <Typography paragraph component="div"><TextWrapper>{children}</TextWrapper></Typography>,
+        h1: ({ children }) => <Typography variant="h1" gutterBottom><TextWrapper>{children}</TextWrapper></Typography>,
+        h2: ({ children }) => <Typography variant="h2" gutterBottom><TextWrapper>{children}</TextWrapper></Typography>,
+        h3: ({ children }) => <Typography variant="h3" gutterBottom><TextWrapper>{children}</TextWrapper></Typography>,
+        h4: ({ children }) => <Typography variant="h4" gutterBottom><TextWrapper>{children}</TextWrapper></Typography>,
+        h5: ({ children }) => <Typography variant="h5" gutterBottom><TextWrapper>{children}</TextWrapper></Typography>,
+        h6: ({ children }) => <Typography variant="h6" gutterBottom><TextWrapper>{children}</TextWrapper></Typography>,
+        li: ({ children }) => <li><Typography component="span"><TextWrapper>{children}</TextWrapper></Typography></li>,
     };
 
     return (
         <Paper
+            ref={containerRef}
             elevation={0}
             sx={{
                 p: 4,
