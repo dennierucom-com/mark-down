@@ -20,7 +20,9 @@ import AddIcon from '@mui/icons-material/Add';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
+import DownloadIcon from '@mui/icons-material/Download';
 import { useFile, type MarkdownFile } from '../context/FileContext';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 const drawerWidth = 280;
 
@@ -28,6 +30,7 @@ const Sidebar: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { files, selectFile, currentFile, addFile, setWorkspaceFiles } = useFile();
+    const { isInstallable, simulateInstall } = usePWAInstall();
     const [openWorkspace, setOpenWorkspace] = useState(true);
     const [openImported, setOpenImported] = useState(true);
 
@@ -176,6 +179,26 @@ const Sidebar: React.FC = () => {
                             </ListItemButton>
                         </List>
                     </Collapse>
+                    {/* Debug Info (Can be removed in prod) */}
+                    <Divider sx={{ my: 1 }} />
+                    <ListItem>
+                        <ListItemText
+                            primary="PWA Status"
+                            secondary={isInstallable ? "Ready to Install" : "Not Installable"}
+                            secondaryTypographyProps={{
+                                color: isInstallable ? 'success.main' : 'text.disabled',
+                                fontWeight: 'bold'
+                            }}
+                        />
+                    </ListItem>
+                    <ListItem disablePadding>
+                        <ListItemButton onClick={simulateInstall}>
+                            <ListItemIcon>
+                                <DownloadIcon color="warning" />
+                            </ListItemIcon>
+                            <ListItemText primary="Simulate Install" />
+                        </ListItemButton>
+                    </ListItem>
                 </List>
             </Box>
         </Drawer>

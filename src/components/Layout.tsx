@@ -11,6 +11,7 @@ import Sidebar from './Sidebar';
 import { useFile } from '../context/FileContext';
 import { useColorMode } from '../context/ThemeContext';
 import { useSearch } from '../context/SearchContext';
+import { PWAInstallPrompt } from './PWAInstallPrompt';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -128,6 +129,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Toolbar /> {/* Spacer for AppBar */}
                 {children}
             </Box>
+            <PWAInstallPrompt />
         </Box>
     );
 };

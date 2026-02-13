@@ -5,6 +5,7 @@ import { lightTheme, darkTheme } from './theme/theme';
 import { FileProvider, useFile } from './context/FileContext';
 import { ThemeContextProvider, useColorMode } from './context/ThemeContext';
 import { SearchProvider } from './context/SearchContext';
+import { PWAProvider } from './context/PWAContext';
 import Layout from './components/Layout';
 import MarkdownReader from './components/MarkdownReader';
 import { sampleMarkdown } from './sampleMarkdown';
@@ -23,6 +24,10 @@ const AppContent = () => {
   );
 };
 
+// ... imports
+
+// ... imports
+
 const MainApp = () => {
   const { mode } = useColorMode();
   const theme = useMemo(
@@ -33,11 +38,13 @@ const MainApp = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <SearchProvider>
-        <FileProvider>
-          <AppContent />
-        </FileProvider>
-      </SearchProvider>
+      <PWAProvider>
+        <SearchProvider>
+          <FileProvider>
+            <AppContent />
+          </FileProvider>
+        </SearchProvider>
+      </PWAProvider>
     </ThemeProvider>
   );
 };
