@@ -1,112 +1,59 @@
-import React, { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
+import { useMemo } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
+import { lightTheme, darkTheme } from './theme/theme';
+import { FileProvider, useFile } from './context/FileContext';
+import { ThemeContextProvider, useColorMode } from './context/ThemeContext';
+import { SearchProvider } from './context/SearchContext';
+import { PWAProvider } from './context/PWAContext';
+import Layout from './components/Layout';
+import MarkdownReader from './components/MarkdownReader';
 import { sampleMarkdown } from './sampleMarkdown';
-import 'highlight.js/styles/github-dark.css';
-import './App.css';
 
-function App() {
-  const [markdownContent, setMarkdownContent] = useState<string>(sampleMarkdown);
-  const [fileName, setFileName] = useState<string>('sample.md');
-  const [isDragging, setIsDragging] = useState<boolean>(false);
+// Inner component to access FileContext
+const AppContent = () => {
+  const { currentFile } = useFile();
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.name.endsWith('.md')) {
-      readFileContent(file);
-    } else {
-      alert('Please select a valid markdown (.md) file');
-    }
-  };
-
-  const readFileContent = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      setMarkdownContent(content);
-      setFileName(file.name);
-    };
-    reader.readAsText(file);
-  };
-
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
-
-    const file = event.dataTransfer.files?.[0];
-    if (file && file.name.endsWith('.md')) {
-      readFileContent(file);
-    } else {
-      alert('Please drop a valid markdown (.md) file');
-    }
-  };
-
-  const resetToSample = () => {
-    setMarkdownContent(sampleMarkdown);
-    setFileName('sample.md');
-  };
+  // Fallback content if no file selected
+  const content = currentFile ? currentFile.content : sampleMarkdown;
 
   return (
-    <div
-      className={`app-container ${isDragging ? 'dragging' : ''}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      <header className="app-header">
-        <h1>📝 Markdown Reader</h1>
-        <p className="subtitle">View your markdown files with style</p>
-      </header>
+    <Layout>
+      <MarkdownReader content={content} />
+    </Layout>
+  );
+};
 
-      <div className="controls">
-        <div className="file-input-wrapper">
-          <input
-            type="file"
-            id="file-upload"
-            accept=".md,.markdown"
-            onChange={handleFileUpload}
-            className="file-input"
-          />
-          <label htmlFor="file-upload" className="file-label">
-            📁 Choose File
-          </label>
-        </div>
+// ... imports
 
-        <span className="current-file">Current: <strong>{fileName}</strong></span>
+// ... imports
 
-        <button onClick={resetToSample} className="reset-button">
-          🔄 Reset to Sample
-        </button>
-      </div>
+const MainApp = () => {
+  const { mode } = useColorMode();
+  const theme = useMemo(
+    () => (mode === 'dark' ? darkTheme : lightTheme),
+    [mode],
+  );
 
-      <div className="markdown-container">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeHighlight]}
-        >
-          {markdownContent}
-        </ReactMarkdown>
-      </div>
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <PWAProvider>
+        <SearchProvider>
+          <FileProvider>
+            <AppContent />
+          </FileProvider>
+        </SearchProvider>
+      </PWAProvider>
+    </ThemeProvider>
+  );
+};
 
-      {isDragging && (
-        <div className="drag-overlay">
-          <div className="drag-message">
-            📂 Drop your markdown file here
-          </div>
-        </div>
-      )}
-    </div>
+function App() {
+  return (
+    <ThemeContextProvider>
+      <MainApp />
+    </ThemeContextProvider>
   );
 }
 
