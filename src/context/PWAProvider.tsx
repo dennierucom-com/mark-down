@@ -1,27 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import React, { useState, useEffect, type ReactNode } from 'react';
+import { PWAContext, type BeforeInstallPromptEvent } from './PWAContext';
 
-interface BeforeInstallPromptEvent extends Event {
-    prompt: () => Promise<void>;
-    userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
-}
-
-interface PWAContextType {
-    isInstallable: boolean;
-    installPWA: () => Promise<void>;
-    simulateInstall: () => void;
-}
-
-const PWAContext = createContext<PWAContextType | undefined>(undefined);
-
-export const usePWAInstall = () => {
-    const context = useContext(PWAContext);
-    if (!context) {
-        throw new Error('usePWAInstall must be used within a PWAProvider');
-    }
-    return context;
-};
-
-interface PWAProviderProps {
+export interface PWAProviderProps {
     children: ReactNode;
 }
 

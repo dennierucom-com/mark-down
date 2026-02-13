@@ -10,7 +10,7 @@ export const PWAInstallPrompt: React.FC = () => {
 
     useEffect(() => {
         if (isInstallable) {
-            setIsVisible(true);
+            setTimeout(() => setIsVisible(true), 0);
         }
     }, [isInstallable]);
 
