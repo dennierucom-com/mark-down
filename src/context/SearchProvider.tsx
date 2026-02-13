@@ -1,20 +1,9 @@
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
-
-interface SearchContextType {
-    searchTerm: string;
-    setSearchTerm: (term: string) => void;
-    currentMatchIndex: number;
-    totalMatches: number;
-    setTotalMatches: (count: number) => void;
-    nextMatch: () => void;
-    prevMatch: () => void;
-}
-
-const SearchContext = createContext<SearchContextType | undefined>(undefined);
+import React, { useState, type ReactNode } from 'react';
+import { SearchContext } from './SearchContext';
 
 export const SearchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [currentMatchIndex, setCurrentMatchIndex] = useState(0); // 0-indexed internally, display as 1-indexed
+    const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
     const [totalMatches, setTotalMatches] = useState(0);
 
     const nextMatch = () => {
@@ -47,12 +36,4 @@ export const SearchProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             {children}
         </SearchContext.Provider>
     );
-};
-
-export const useSearch = () => {
-    const context = useContext(SearchContext);
-    if (context === undefined) {
-        throw new Error('useSearch must be used within a SearchProvider');
-    }
-    return context;
 };

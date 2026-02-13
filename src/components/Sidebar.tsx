@@ -44,7 +44,7 @@ const Sidebar: React.FC = () => {
 
     const handleOpenFolder = async () => {
         try {
-            // @ts-ignore - File System Access API
+            // @ts-expect-error - File System Access API
             const dirHandle = await window.showDirectoryPicker();
             const newFiles: MarkdownFile[] = [];
 
@@ -74,8 +74,9 @@ const Sidebar: React.FC = () => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.md,.markdown';
-        input.onchange = async (e: any) => {
-            const file = e.target.files[0];
+        input.onchange = async (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            const file = target.files?.[0];
             if (file) {
                 const text = await file.text();
                 addFile({
