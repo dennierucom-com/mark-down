@@ -13,6 +13,7 @@ import {
     useTheme,
     useMediaQuery,
     Collapse,
+    IconButton,
 } from '@mui/material';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
@@ -20,17 +21,24 @@ import AddIcon from '@mui/icons-material/Add';
 import DescriptionIcon from '@mui/icons-material/Description';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import DownloadIcon from '@mui/icons-material/Download';
+// import DownloadIcon from '@mui/icons-material/Download';
 import { useFile, type MarkdownFile } from '../context/FileContext';
-import { usePWAInstall } from '../hooks/usePWAInstall';
+// import { usePWAInstall } from '../hooks/usePWAInstall';
+
+import CloseIcon from '@mui/icons-material/Close';
 
 const drawerWidth = 280;
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+    mobileOpen?: boolean;
+    onClose?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onClose }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { files, selectFile, currentFile, addFile, setWorkspaceFiles } = useFile();
-    const { isInstallable, simulateInstall } = usePWAInstall();
+    // const { isInstallable, simulateInstall } = usePWAInstall(); // Unused since UI commented out
     const [openWorkspace, setOpenWorkspace] = useState(true);
     const [openImported, setOpenImported] = useState(true);
 
@@ -92,20 +100,38 @@ const Sidebar: React.FC = () => {
     const workspaceFiles = files.filter(f => !f.isImported);
     const importedFiles = files.filter(f => f.isImported);
 
+    const handleFileClick = (name: string) => {
+        selectFile(name);
+        if (isMobile && onClose) {
+            onClose();
+        }
+    };
+
     return (
         <Drawer
             variant={isMobile ? "temporary" : "permanent"}
+            open={isMobile ? mobileOpen : true}
+            onClose={onClose}
+            ModalProps={{
+                keepMounted: true, // Better open performance on mobile.
+            }}
             sx={{
                 width: drawerWidth,
                 flexShrink: 0,
                 [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', borderRight: 'none', backgroundColor: theme.palette.background.default },
             }}
-            open={true} // Handle mobile open state if needed
         >
             <Box sx={{ overflow: 'auto', p: 2 }}>
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: theme.palette.primary.main }}>
-                    Markdown Reader
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: theme.palette.primary.main }}>
+                        Markdown Reader
+                    </Typography>
+                    {isMobile && (
+                        <IconButton onClick={onClose}>
+                            <CloseIcon />
+                        </IconButton>
+                    )}
+                </Box>
 
                 <Box sx={{ mb: 2 }}>
                     <Fab
@@ -139,12 +165,12 @@ const Sidebar: React.FC = () => {
                                     <ListItemButton
                                         key={file.name}
                                         sx={{ pl: 4, borderRadius: 4, mb: 0.5, backgroundColor: currentFile?.name === file.name ? theme.palette.action.selected : 'transparent' }}
-                                        onClick={() => selectFile(file.name)}
+                                        onClick={() => handleFileClick(file.name)}
                                     >
                                         <ListItemIcon sx={{ minWidth: 32 }}>
                                             <InsertDriveFileIcon fontSize="small" color={currentFile?.name === file.name ? 'primary' : 'inherit'} />
                                         </ListItemIcon>
-                                        <ListItemText primary={file.name} primaryTypographyProps={{ noWrap: true, fontSize: 0.9 }} />
+                                        <ListItemText primary={file.name} primaryTypographyProps={{ noWrap: true, fontSize: '0.9rem' }} />
                                     </ListItemButton>
                                 ))
                             )}
@@ -164,12 +190,12 @@ const Sidebar: React.FC = () => {
                                 <ListItemButton
                                     key={file.name}
                                     sx={{ pl: 4, borderRadius: 4, mb: 0.5, backgroundColor: currentFile?.name === file.name ? theme.palette.action.selected : 'transparent' }}
-                                    onClick={() => selectFile(file.name)}
+                                    onClick={() => handleFileClick(file.name)}
                                 >
                                     <ListItemIcon sx={{ minWidth: 32 }}>
                                         <DescriptionIcon fontSize="small" color={currentFile?.name === file.name ? 'secondary' : 'inherit'} />
                                     </ListItemIcon>
-                                    <ListItemText primary={file.name} primaryTypographyProps={{ noWrap: true, fontSize: 0.9 }} />
+                                    <ListItemText primary={file.name} primaryTypographyProps={{ noWrap: true, fontSize: '0.9rem' }} />
                                 </ListItemButton>
                             ))}
                             <ListItemButton onClick={handleManualInject} sx={{ pl: 4, color: theme.palette.primary.main }}>
@@ -180,7 +206,7 @@ const Sidebar: React.FC = () => {
                             </ListItemButton>
                         </List>
                     </Collapse>
-                    {/* Debug Info (Can be removed in prod) */}
+                    {/*  
                     <Divider sx={{ my: 1 }} />
                     <ListItem>
                         <ListItemText
@@ -199,7 +225,7 @@ const Sidebar: React.FC = () => {
                             </ListItemIcon>
                             <ListItemText primary="Simulate Install" />
                         </ListItemButton>
-                    </ListItem>
+                    </ListItem>*/}
                 </List>
             </Box>
         </Drawer>

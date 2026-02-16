@@ -25,6 +25,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const { mode, toggleTheme } = useColorMode();
     const { searchTerm, setSearchTerm, nextMatch, prevMatch, totalMatches, currentMatchIndex } = useSearch();
     const [showSearch, setShowSearch] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
 
     const handleSearchToggle = () => {
         if (showSearch) {
@@ -49,6 +54,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         color="inherit"
                         aria-label="open drawer"
                         edge="start"
+                        onClick={handleDrawerToggle}
                         sx={{ mr: 2, display: { sm: 'none' } }}
                     >
                         <MenuIcon />
@@ -112,7 +118,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
                 aria-label="mailbox folders"
             >
-                <Sidebar />
+                <Sidebar mobileOpen={mobileOpen} onClose={handleDrawerToggle} />
             </Box>
             <Box
                 component="main"

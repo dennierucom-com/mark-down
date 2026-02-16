@@ -14,6 +14,11 @@ interface MarkdownReaderProps {
     content: string;
 }
 
+interface CodeBlockProps extends React.HTMLAttributes<HTMLElement> {
+    inline?: boolean;
+    node?: import('hast').Element; // node is passed by react-markdown but we don't use it directly here
+}
+
 const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
     const theme = useTheme();
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -92,56 +97,19 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
         );
     };
 
-    // Custom renderer for code blocks to add copy functionality
-    const components: Components = {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        code({ inline, className, children, ...props }: any) {
-            const match = /language-(\w+)/.exec(className || '');
-            const codeString = String(children).replace(/\n$/, '');
+    // Custom renderer for code blocks
+    const CodeBlock = ({ inline, className, children, ...props }: CodeBlockProps) => {
+        const match = /language-(\w+)/.exec(className || '');
+        const codeRef = useRef<HTMLElement>(null);
 
-            const handleCopy = () => {
-                navigator.clipboard.writeText(codeString);
-            };
+        const handleCopy = () => {
+            if (codeRef.current) {
+                navigator.clipboard.writeText(codeRef.current.innerText);
+            }
+        };
 
-            return !inline ? (
-                <Box sx={{ position: 'relative', mb: 2 }}>
-                    <Paper
-                        elevation={0}
-                        sx={{
-                            p: 0,
-                            overflow: 'hidden',
-                            borderRadius: 2,
-                            border: `1px solid ${theme.palette.divider}`,
-                            backgroundColor: theme.palette.mode === 'dark' ? '#0d1117' : '#f6f8fa' // GitHub style bg
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                p: 1,
-                                backgroundColor: theme.palette.mode === 'dark' ? '#161b22' : '#eaeef2',
-                                borderBottom: `1px solid ${theme.palette.divider}`
-                            }}
-                        >
-                            <Typography variant="caption" sx={{ fontFamily: 'monospace', ml: 1 }}>
-                                {match ? match[1] : 'text'}
-                            </Typography>
-                            <Tooltip title="Copy to Clipboard">
-                                <IconButton size="small" onClick={handleCopy}>
-                                    <ContentCopyIcon fontSize="small" />
-                                </IconButton>
-                            </Tooltip>
-                        </Box>
-                        <Box sx={{ p: 2, overflowX: 'auto' }}>
-                            <code className={className} {...props}>
-                                {children}
-                            </code>
-                        </Box>
-                    </Paper>
-                </Box>
-            ) : (
+        if (inline) {
+            return (
                 <code className={className} {...props} style={{
                     backgroundColor: theme.palette.action.hover,
                     padding: '2px 4px',
@@ -151,7 +119,51 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
                     {children}
                 </code>
             );
-        },
+        }
+
+        return (
+            <Box sx={{ position: 'relative', mb: 2 }}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 0,
+                        overflow: 'hidden',
+                        borderRadius: 2,
+                        border: `1px solid ${theme.palette.divider}`,
+                        backgroundColor: theme.palette.mode === 'dark' ? '#0d1117' : '#f6f8fa'
+                    }}
+                >
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            p: 1,
+                            backgroundColor: theme.palette.mode === 'dark' ? '#161b22' : '#eaeef2',
+                            borderBottom: `1px solid ${theme.palette.divider}`
+                        }}
+                    >
+                        <Typography variant="caption" sx={{ fontFamily: 'monospace', ml: 1 }}>
+                            {match ? match[1] : 'text'}
+                        </Typography>
+                        <Tooltip title="Copy to Clipboard">
+                            <IconButton size="small" onClick={handleCopy}>
+                                <ContentCopyIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
+                    </Box>
+                    <Box sx={{ p: 2, overflowX: 'auto' }}>
+                        <code ref={codeRef} className={className} {...props}>
+                            {children}
+                        </code>
+                    </Box>
+                </Paper>
+            </Box>
+        );
+    };
+
+    const components: Components = {
+        code: CodeBlock,
         p: ({ children }) => <Typography paragraph component="div"><TextWrapper>{children}</TextWrapper></Typography>,
         h1: ({ children }) => <Typography variant="h1" gutterBottom><TextWrapper>{children}</TextWrapper></Typography>,
         h2: ({ children }) => <Typography variant="h2" gutterBottom><TextWrapper>{children}</TextWrapper></Typography>,
