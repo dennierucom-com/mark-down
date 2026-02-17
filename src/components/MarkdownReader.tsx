@@ -19,23 +19,44 @@ interface CodeBlockProps extends React.HTMLAttributes<HTMLElement> {
     node?: import('hast').Element; // node is passed by react-markdown but we don't use it directly here
 }
 
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+
+// ... (existing helper functions)
+
 const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
     const theme = useTheme();
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isElectricMode, setIsElectricMode] = useState(false);
     const { searchTerm, setTotalMatches, currentMatchIndex } = useSearch();
     const containerRef = useRef<HTMLDivElement>(null);
 
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-            setIsFullscreen(true);
+            containerRef.current?.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable fullscreen: ${err.message}`);
+            });
         } else {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
-                setIsFullscreen(false);
             }
         }
     };
+
+    const toggleElectricMode = () => {
+        setIsElectricMode(!isElectricMode);
+    };
+
+    // Effect to handle fullscreen change (ESQ key, etc.)
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        };
+    }, []);
 
     // Effect to count matches and handle navigation
     useEffect(() => {
@@ -172,6 +193,42 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
         h5: ({ children }) => <Typography variant="h5" gutterBottom><TextWrapper>{children}</TextWrapper></Typography>,
         h6: ({ children }) => <Typography variant="h6" gutterBottom><TextWrapper>{children}</TextWrapper></Typography>,
         li: ({ children }) => <li><Typography component="span"><TextWrapper>{children}</TextWrapper></Typography></li>,
+        strong: ({ children }) => (
+            <Box
+                component="strong"
+                sx={
+                    isElectricMode
+                        ? {
+                              backgroundColor: '#ffeb3b',
+                              color: 'black',
+                              boxShadow: '0 0 4px #ffeb3b',
+                              borderRadius: '2px',
+                              padding: '0 2px',
+                          }
+                        : {}
+                }
+            >
+                <TextWrapper>{children}</TextWrapper>
+            </Box>
+        ),
+        b: ({ children }) => (
+             <Box
+                component="strong"
+                sx={
+                    isElectricMode
+                        ? {
+                              backgroundColor: '#ffeb3b',
+                              color: 'black',
+                              boxShadow: '0 0 4px #ffeb3b',
+                              borderRadius: '2px',
+                              padding: '0 2px',
+                          }
+                        : {}
+                }
+            >
+                <TextWrapper>{children}</TextWrapper>
+            </Box>
+        ),
     };
 
     return (
@@ -185,18 +242,28 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
                 transition: 'all 0.3s ease',
                 position: 'relative',
                 maxWidth: '100%',
-                mx: 'auto'
-                // Center content container?
+                mx: 'auto',
+                overflow: isFullscreen ? 'auto' : undefined,
+                backgroundColor: theme.palette.background.paper
             }}
         >
-            <Tooltip title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
-                <IconButton
-                    onClick={toggleFullscreen}
-                    sx={{ position: 'absolute', top: 16, right: 16 }}
-                >
-                    {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-                </IconButton>
-            </Tooltip>
+            <Box sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1, display: 'flex', gap: 1 }}>
+                <Tooltip title={isElectricMode ? "Disable Electric Mode" : "Enable Electric Mode"}>
+                    <IconButton
+                        onClick={toggleElectricMode}
+                        color={isElectricMode ? 'warning' : 'default'}
+                    >
+                        <ElectricBoltIcon />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
+                    <IconButton
+                        onClick={toggleFullscreen}
+                    >
+                        {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+                    </IconButton>
+                </Tooltip>
+            </Box>
 
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
