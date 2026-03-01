@@ -14,6 +14,7 @@ export interface FileContextType {
     addFile: (file: MarkdownFile) => void;
     selectFile: (fileName: string) => void;
     setWorkspaceFiles: (files: MarkdownFile[]) => void;
+    clearFiles: () => void;
 }
 
 export const FileContext = createContext<FileContextType | undefined>(undefined);
