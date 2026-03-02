@@ -74,12 +74,12 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
         // Apply active class and scroll
         matches.forEach((match, index) => {
           if (index === currentMatchIndex) {
-            match.style.backgroundColor = "#ff9800"; // Orange for active
-            match.style.color = "black";
+            match.style.backgroundColor = theme.custom.search.activeHighlight;
+            match.style.color = theme.custom.search.highlightText;
             match.scrollIntoView({ behavior: "smooth", block: "center" });
           } else {
-            match.style.backgroundColor = "#ffeb3b"; // Yellow for others
-            match.style.color = "black";
+            match.style.backgroundColor = theme.custom.search.highlight;
+            match.style.color = theme.custom.search.highlightText;
           }
         });
       }
@@ -100,8 +100,8 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
             <mark
               key={i}
               style={{
-                backgroundColor: "#ffeb3b",
-                color: "black",
+                backgroundColor: theme.custom.search.highlight,
+                color: theme.custom.search.highlightText,
                 borderRadius: 2,
               }}
             >
@@ -183,8 +183,7 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
             overflow: "hidden",
             borderRadius: 2,
             border: `1px solid ${theme.palette.divider}`,
-            backgroundColor:
-              theme.palette.mode === "dark" ? "#0d1117" : "#f6f8fa",
+            backgroundColor: theme.custom.codeBlock.background,
           }}
         >
           <Box
@@ -193,8 +192,7 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
               justifyContent: "space-between",
               alignItems: "center",
               p: 1,
-              backgroundColor:
-                theme.palette.mode === "dark" ? "#161b22" : "#eaeef2",
+              backgroundColor: theme.custom.codeBlock.headerBackground,
               borderBottom: `1px solid ${theme.palette.divider}`,
             }}
           >
@@ -272,9 +270,9 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
         sx={
           isElectricMode
             ? {
-                backgroundColor: "#ffeb3b",
-                color: "black",
-                boxShadow: "0 0 4px #ffeb3b",
+                backgroundColor: theme.custom.electric.glow,
+                color: theme.custom.electric.glowText,
+                boxShadow: `0 0 4px ${theme.custom.electric.glow}`,
                 borderRadius: "2px",
                 padding: "0 2px",
               }
@@ -290,9 +288,9 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
         sx={
           isElectricMode
             ? {
-                backgroundColor: "#ffeb3b",
-                color: "black",
-                boxShadow: "0 0 4px #ffeb3b",
+                backgroundColor: theme.custom.electric.glow,
+                color: theme.custom.electric.glowText,
+                boxShadow: `0 0 4px ${theme.custom.electric.glow}`,
                 borderRadius: "2px",
                 padding: "0 2px",
               }

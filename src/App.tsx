@@ -1,22 +1,21 @@
-import { useMemo } from 'react';
-import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
-import { lightTheme, darkTheme } from './theme/theme';
-import { useFile } from './context/FileContext';
-import { FileProvider } from './context/FileProvider';
-import { useColorMode } from './context/ThemeContext';
-import { ThemeContextProvider } from './context/ThemeContextProvider';
-import { SearchProvider } from './context/SearchProvider';
-import { PWAProvider } from './context/PWAProvider';
-import Layout from './components/Layout';
-import MarkdownReader from './components/MarkdownReader';
-import { sampleMarkdown } from './sampleMarkdown';
+import { useMemo } from "react";
+import { ThemeProvider } from "@mui/material/styles";
+import { CssBaseline } from "@mui/material";
+import { buildTheme } from "./theme/theme";
+import { getPaletteByName } from "./theme/palette";
+import { useFile } from "./context/FileContext";
+import { FileProvider } from "./context/FileProvider";
+import { useColorMode } from "./context/ThemeContext";
+import { ThemeContextProvider } from "./context/ThemeContextProvider";
+import { SearchProvider } from "./context/SearchProvider";
+import { PWAProvider } from "./context/PWAProvider";
+import Layout from "./components/Layout";
+import MarkdownReader from "./components/MarkdownReader";
+import { sampleMarkdown } from "./sampleMarkdown";
 
 // Inner component to access FileContext
 const AppContent = () => {
   const { currentFile } = useFile();
-
-  // Fallback content if no file selected
   const content = currentFile ? currentFile.content : sampleMarkdown;
 
   return (
@@ -26,16 +25,13 @@ const AppContent = () => {
   );
 };
 
-// ... imports
-
-// ... imports
-
 const MainApp = () => {
-  const { mode } = useColorMode();
-  const theme = useMemo(
-    () => (mode === 'dark' ? darkTheme : lightTheme),
-    [mode],
-  );
+  const { mode, paletteName } = useColorMode();
+  const theme = useMemo(() => {
+    const entry = getPaletteByName(paletteName);
+    const palette = mode === "dark" ? entry.dark : entry.light;
+    return buildTheme(palette, mode);
+  }, [mode, paletteName]);
 
   return (
     <ThemeProvider theme={theme}>

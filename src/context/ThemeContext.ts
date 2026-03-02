@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react';
 
 export interface ThemeContextType {
     mode: 'light' | 'dark';
+    paletteName: string;
     toggleTheme: () => void;
 }
 
