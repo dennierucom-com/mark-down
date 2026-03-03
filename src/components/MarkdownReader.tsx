@@ -86,7 +86,15 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [content, searchTerm, currentMatchIndex, setTotalMatches]);
+  }, [
+    content,
+    searchTerm,
+    currentMatchIndex,
+    setTotalMatches,
+    theme.custom.search.activeHighlight,
+    theme.custom.search.highlight,
+    theme.custom.search.highlightText,
+  ]);
 
   // Helper to highlight text
   const HighlightText = ({ text }: { text: string }) => {
