@@ -3,27 +3,12 @@ import { ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import { buildTheme } from "./theme/theme";
 import { getPaletteByName } from "./theme/palette";
-import { useFile } from "./context/FileContext";
-import { FileProvider } from "./context/FileProvider";
-import { useColorMode } from "./context/ThemeContext";
-import { ThemeContextProvider } from "./context/ThemeContextProvider";
-import { SearchProvider } from "./context/SearchProvider";
-import { PWAProvider } from "./context/PWAProvider";
-import Layout from "./components/Layout";
-import MarkdownReader from "./components/MarkdownReader";
-import { sampleMarkdown } from "./sampleMarkdown";
-
-// Inner component to access FileContext
-const AppContent = () => {
-  const { currentFile } = useFile();
-  const content = currentFile ? currentFile.content : sampleMarkdown;
-
-  return (
-    <Layout>
-      <MarkdownReader content={content} />
-    </Layout>
-  );
-};
+import { useColorMode } from "./store/ThemeContext";
+import { ThemeContextProvider } from "./store/ThemeContextProvider";
+import { FileProvider } from "./store/FileProvider";
+import { SearchProvider } from "./store/SearchProvider";
+import { PWAProvider } from "./features/PWA/context/PWAProvider";
+import HomePage from "./pages/HomePage";
 
 const MainApp = () => {
   const { mode, paletteName } = useColorMode();
@@ -39,7 +24,7 @@ const MainApp = () => {
       <PWAProvider>
         <SearchProvider>
           <FileProvider>
-            <AppContent />
+            <HomePage />
           </FileProvider>
         </SearchProvider>
       </PWAProvider>

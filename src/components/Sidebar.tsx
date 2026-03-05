@@ -19,7 +19,7 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
-import { useFile } from "../context/FileContext";
+import { useFile } from "../store/FileContext";
 
 const drawerWidth = 280;
 

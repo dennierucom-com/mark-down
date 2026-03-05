@@ -16,7 +16,7 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import "highlight.js/styles/github-dark.css"; // Or dynamically switch based on theme
 import type { Components } from "react-markdown";
-import { useSearch } from "../context/SearchContext";
+import { useSearch } from "../../../store/SearchContext";
 
 interface MarkdownReaderProps {
   content: string;

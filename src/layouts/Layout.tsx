@@ -25,12 +25,12 @@ import CloseIcon from "@mui/icons-material/Close";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
-import Sidebar from "./Sidebar";
-import { useFile } from "../context/FileContext";
-import { useColorMode } from "../context/ThemeContext";
-import { useSearch } from "../context/SearchContext";
+import Sidebar from "../components/Sidebar";
+import { useFile } from "../store/FileContext";
+import { useColorMode } from "../store/ThemeContext";
+import { useSearch } from "../store/SearchContext";
 import { useFileActions } from "../hooks/useFileActions";
-import { PWAInstallPrompt } from "./PWAInstallPrompt";
+import { PWAInstallPrompt } from "../features/PWA/components/PWAInstallPrompt";
 
 interface LayoutProps {
   children: React.ReactNode;

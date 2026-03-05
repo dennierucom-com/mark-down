@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
-import { PWAInstallPrompt } from "../../../src/components/PWAInstallPrompt";
-import * as usePWAInstallSource from "../../../src/hooks/usePWAInstall";
+import { PWAInstallPrompt } from "../../../src/features/PWA/components/PWAInstallPrompt";
+import * as usePWAInstallSource from "../../../src/features/PWA/hooks/usePWAInstall";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 const mockTheme = createTheme();

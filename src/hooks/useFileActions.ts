@@ -1,4 +1,4 @@
-import { useFile, type MarkdownFile } from '../context/FileContext';
+import { useFile, type MarkdownFile } from '../store/FileContext';
 
 export const useFileActions = () => {
     const { addFile, setWorkspaceFiles, clearFiles } = useFile();

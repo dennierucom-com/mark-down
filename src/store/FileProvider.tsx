@@ -1,6 +1,6 @@
 import React, { useState, useEffect, type ReactNode } from "react";
 import { FileContext, type MarkdownFile } from "./FileContext";
-import { sampleMarkdown } from "../sampleMarkdown";
+import { sampleMarkdown } from "../features/MarkdownReader/data/sampleMarkdown";
 
 export const FileProvider: React.FC<{ children: ReactNode }> = ({
   children,
