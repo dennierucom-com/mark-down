@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Drawer,
   List,
@@ -13,6 +13,7 @@ import {
   useMediaQuery,
   Collapse,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -22,6 +23,40 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useFile } from "../context/FileContext";
 
 const drawerWidth = 280;
+
+const TruncatedTooltip: React.FC<{ text: string }> = ({ text }) => {
+  const [isOverflowed, setIsOverflowed] = useState(false);
+  const textRef = useRef<HTMLSpanElement>(null);
+
+  const checkOverflow = () => {
+    const element = textRef.current;
+    if (element) {
+      setIsOverflowed(element.scrollWidth > element.clientWidth);
+    }
+  };
+
+  useEffect(() => {
+    checkOverflow();
+  }, [text]);
+
+  return (
+    <Tooltip title={text} disableHoverListener={!isOverflowed} arrow>
+      <span
+        ref={textRef}
+        onMouseEnter={checkOverflow}
+        style={{
+          display: "block",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          fontSize: "0.9rem",
+        }}
+      >
+        {text}
+      </span>
+    </Tooltip>
+  );
+};
 
 interface SidebarProps {
   mobileOpen?: boolean;
@@ -132,11 +167,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onClose }) => {
                       />
                     </ListItemIcon>
                     <ListItemText
-                      primary={file.name}
-                      primaryTypographyProps={{
-                        noWrap: true,
-                        fontSize: "0.9rem",
-                      }}
+                      primary={<TruncatedTooltip text={file.name} />}
                     />
                   </ListItemButton>
                 ))
@@ -184,11 +215,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onClose }) => {
                     />
                   </ListItemIcon>
                   <ListItemText
-                    primary={file.name}
-                    primaryTypographyProps={{
-                      noWrap: true,
-                      fontSize: "0.9rem",
-                    }}
+                    primary={<TruncatedTooltip text={file.name} />}
                   />
                 </ListItemButton>
               ))}
