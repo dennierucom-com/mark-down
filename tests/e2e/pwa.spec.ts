@@ -16,7 +16,7 @@ test.describe('PWA Add to Home Screen (A2HS)', () => {
     await page.goto('/');
 
     // Verify app loaded
-    await expect(page).toHaveTitle(/Markdowner/i);
+    await expect(page).toHaveTitle(/Mark South/i);
 
     // 2. Simulate the browser firing the PWA install event
     await page.evaluate(() => {

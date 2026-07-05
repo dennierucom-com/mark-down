@@ -1,8 +1,8 @@
 {
-  "name": "markdowner",
+  "name": "mark-south",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://dennierucom-com.github.io/mark-down/",
+  "homepage": "https://dennierucom-com.github.io/mark-south/",
   "type": "module",
   "scripts": {
     "dev": "vite",

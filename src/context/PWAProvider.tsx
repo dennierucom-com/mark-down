@@ -11,14 +11,14 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
 
     useEffect(() => {
         const handler = (e: Event) => {
-            console.log('Markdowner: beforeinstallprompt captured', e);
+            console.log('Mark South: beforeinstallprompt captured', e);
             e.preventDefault();
             setDeferredPrompt(e as BeforeInstallPromptEvent);
             setIsInstallable(true);
         };
 
         window.addEventListener('beforeinstallprompt', handler);
-        console.log('Markdowner: PWA Provider initialized');
+        console.log('Mark South: PWA Provider initialized');
 
         window.addEventListener('appinstalled', () => {
             setDeferredPrompt(null);
@@ -47,7 +47,7 @@ export const PWAProvider: React.FC<PWAProviderProps> = ({ children }) => {
     };
 
     const simulateInstall = () => {
-        console.log('Markdowner: Simulating install event');
+        console.log('Mark South: Simulating install event');
         setIsInstallable(true);
     };
 

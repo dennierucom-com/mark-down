@@ -1,1 +1,1 @@
-if('serviceWorker' in navigator) navigator.serviceWorker.register('/mark-down/dev-sw.js?dev-sw', { scope: '/mark-down/', type: 'classic' })
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/mark-south/dev-sw.js?dev-sw', { scope: '/mark-south/', type: 'classic' })

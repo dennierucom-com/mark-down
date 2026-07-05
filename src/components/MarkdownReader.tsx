@@ -10,11 +10,12 @@ import {
   Typography,
   useTheme,
   Tooltip,
+  GlobalStyles,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import "highlight.js/styles/github-dark.css"; // Or dynamically switch based on theme
+import CheckIcon from "@mui/icons-material/Check";
 import type { Components } from "react-markdown";
 import { useSearch } from "../context/SearchContext";
 
@@ -158,6 +159,50 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
     );
   };
 
+  // WCAG AAA-compliant high-contrast code syntax styles
+  const syntaxHighlightStyles = {
+    'pre code.hljs': {
+      color: '#1f2937 !important',
+      backgroundColor: 'transparent !important',
+      fontFamily: 'JetBrains Mono, Fira Code, Consolas, Monaco, monospace !important',
+      fontSize: '0.875rem !important',
+      lineHeight: '1.6 !important',
+    },
+    '.hljs-keyword, .hljs-selector-tag, .hljs-subst': {
+      color: '#ac0d1a !important',
+      fontWeight: 'bold !important',
+    },
+    '.hljs-string, .hljs-regexp, .hljs-symbol, .hljs-bullet, .hljs-addition': {
+      color: '#07336f !important',
+    },
+    '.hljs-comment, .hljs-quote, .hljs-deletion': {
+      color: '#4b5563 !important',
+      fontStyle: 'italic !important',
+    },
+    '.hljs-number, .hljs-literal, .hljs-type, .hljs-built_in': {
+      color: '#803000 !important',
+    },
+    '.hljs-title, .hljs-section, .hljs-name': {
+      color: '#5c2dc5 !important',
+      fontWeight: '600 !important',
+    },
+    '.hljs-attr, .hljs-attribute, .hljs-variable, .hljs-template-variable, .hljs-tag': {
+      color: '#02479e !important',
+    },
+    '.hljs-operator, .hljs-punctuation': {
+      color: '#1f2937 !important',
+    },
+    '.hljs-meta, .hljs-meta .hljs-keyword': {
+      color: '#5c2dc5 !important',
+    },
+    '.hljs-emphasis': {
+      fontStyle: 'italic !important',
+    },
+    '.hljs-strong': {
+      fontWeight: 'bold !important',
+    },
+  };
+
   // Block code renderer — wraps fenced code blocks (```...```)
   // In react-markdown, block code is always rendered as <pre><code>...</code></pre>.
   // By overriding `pre`, we capture the block wrapper and add our custom UI.
@@ -166,10 +211,13 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
     ...props
   }: React.HTMLAttributes<HTMLPreElement>) => {
     const codeRef = useRef<HTMLPreElement>(null);
+    const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
       if (codeRef.current) {
         navigator.clipboard.writeText(codeRef.current.innerText);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
       }
     };
 
@@ -183,41 +231,80 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
     }
 
     return (
-      <Box sx={{ position: "relative", mb: 2 }}>
+      <Box sx={{ position: "relative", mb: 3 }}>
         <Paper
           elevation={0}
           sx={{
             p: 0,
             overflow: "hidden",
-            borderRadius: 2,
-            border: `1px solid ${theme.palette.divider}`,
-            backgroundColor: theme.custom.codeBlock.background,
+            borderRadius: "12px",
+            border: "1px solid #e2e8f0",
+            backgroundColor: "#ffffff",
+            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03)",
           }}
         >
+          {/* Header Bar */}
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              p: 1,
-              backgroundColor: theme.custom.codeBlock.headerBackground,
-              borderBottom: `1px solid ${theme.palette.divider}`,
+              px: 2,
+              py: 1,
+              backgroundColor: "#f8fafc",
+              borderBottom: "1px solid #e2e8f0",
             }}
           >
             <Typography
               variant="caption"
-              sx={{ fontFamily: "monospace", ml: 1 }}
+              sx={{
+                fontFamily: 'JetBrains Mono, Fira Code, Consolas, Monaco, monospace',
+                fontWeight: 600,
+                color: "#64748b",
+                textTransform: "uppercase",
+                fontSize: "0.75rem",
+                letterSpacing: "0.05em",
+              }}
             >
               {language}
             </Typography>
-            <Tooltip title="Copy to Clipboard">
-              <IconButton size="small" onClick={handleCopy}>
-                <ContentCopyIcon fontSize="small" />
+            <Tooltip title={copied ? "Copied!" : "Copy code"}>
+              <IconButton
+                size="small"
+                onClick={handleCopy}
+                sx={{
+                  color: "#64748b",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    color: "#0f172a",
+                    backgroundColor: "#e2e8f0",
+                  },
+                }}
+              >
+                {copied ? (
+                  <CheckIcon fontSize="small" sx={{ color: "#10b981" }} />
+                ) : (
+                  <ContentCopyIcon fontSize="small" />
+                )}
               </IconButton>
             </Tooltip>
           </Box>
-          <Box sx={{ p: 2, overflowX: "auto" }}>
-            <pre ref={codeRef} {...props} style={{ margin: 0 }}>
+          {/* Code Content */}
+          <Box
+            sx={{
+              p: 2,
+              overflowX: "auto",
+              backgroundColor: "#ffffff",
+              "& pre": {
+                margin: 0,
+                fontFamily: 'JetBrains Mono, Fira Code, Consolas, Monaco, monospace',
+                fontSize: "0.875rem",
+                lineHeight: 1.6,
+                color: "#1f2937",
+              },
+            }}
+          >
+            <pre ref={codeRef} {...props}>
               {children}
             </pre>
           </Box>
@@ -355,6 +442,7 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
         </Tooltip>
       </Box>
 
+      <GlobalStyles styles={syntaxHighlightStyles} />
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight, rehypeSlug]}
