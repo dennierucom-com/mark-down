@@ -13,14 +13,16 @@ import Layout from "./components/Layout";
 import MarkdownReader from "./components/MarkdownReader";
 import { sampleMarkdown } from "./sampleMarkdown";
 
-// Inner component to access FileContext
 const AppContent = () => {
-  const { currentFile } = useFile();
+  const { currentFile, updateCurrentFileContent } = useFile();
   const content = currentFile ? currentFile.content : sampleMarkdown;
 
   return (
     <Layout>
-      <MarkdownReader content={content} />
+      <MarkdownReader 
+        content={content} 
+        onContentChange={updateCurrentFileContent}
+      />
     </Layout>
   );
 };

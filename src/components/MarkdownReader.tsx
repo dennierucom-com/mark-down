@@ -21,18 +21,27 @@ import { useSearch } from "../context/SearchContext";
 
 interface MarkdownReaderProps {
   content: string;
+  onContentChange?: (newContent: string) => void;
 }
 
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
+import EditIcon from "@mui/icons-material/Edit";
+import { InputBase, ClickAwayListener } from "@mui/material";
+import { groupMarkdownLines, type MarkdownBlock } from "../utils/markdownLineGrouper";
 
 // ... (existing helper functions)
 
-const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
+const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, onContentChange }) => {
   const theme = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isElectricMode, setIsElectricMode] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
   const { searchTerm, setTotalMatches, currentMatchIndex } = useSearch();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const blocks = React.useMemo(() => groupMarkdownLines(content), [content]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -48,6 +57,22 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
 
   const toggleElectricMode = () => {
     setIsElectricMode(!isElectricMode);
+  };
+
+  const toggleEditMode = () => {
+    setIsEditMode(!isEditMode);
+    if (isEditMode) {
+      setEditingBlockId(null);
+    }
+  };
+
+  const handleSaveBlock = (block: MarkdownBlock) => {
+    if (editValue !== block.rawContent && onContentChange) {
+      const lines = content.split('\n');
+      lines.splice(block.startLine, block.endLine - block.startLine + 1, ...editValue.split('\n'));
+      onContentChange(lines.join('\n'));
+    }
+    setEditingBlockId(null);
   };
 
   // Effect to handle fullscreen change (ESQ key, etc.)
@@ -424,6 +449,16 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
         }}
       >
         <Tooltip
+          title={isEditMode ? "Disable Edit Mode" : "Enable Edit Mode"}
+        >
+          <IconButton
+            onClick={toggleEditMode}
+            color={isEditMode ? "primary" : "default"}
+          >
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip
           title={
             isElectricMode ? "Disable Electric Mode" : "Enable Electric Mode"
           }
@@ -443,13 +478,71 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content }) => {
       </Box>
 
       <GlobalStyles styles={syntaxHighlightStyles} />
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight, rehypeSlug]}
-        components={components}
-      >
-        {content}
-      </ReactMarkdown>
+      {blocks.map((block) => {
+        if (block.type === 'empty') return null;
+
+        if (isEditMode && editingBlockId === block.id) {
+          return (
+            <ClickAwayListener key={block.id} onClickAway={() => handleSaveBlock(block)}>
+              <Box sx={{ my: 1 }}>
+                <InputBase
+                  multiline
+                  fullWidth
+                  autoFocus
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSaveBlock(block);
+                    }
+                  }}
+                  sx={{
+                    fontFamily: 'monospace',
+                    fontSize: '0.875rem',
+                    p: 2,
+                    border: `1px solid ${theme.palette.primary.main}`,
+                    borderRadius: 1,
+                    backgroundColor: theme.palette.background.default,
+                  }}
+                />
+              </Box>
+            </ClickAwayListener>
+          );
+        }
+
+        return (
+          <Box
+            key={block.id}
+            onClick={() => {
+              if (isEditMode) {
+                setEditingBlockId(block.id);
+                setEditValue(block.rawContent);
+              }
+            }}
+            sx={{
+              ...(isEditMode && {
+                cursor: 'pointer',
+                borderRadius: 1,
+                border: '1px solid transparent',
+                '&:hover': {
+                  borderColor: theme.palette.primary.main,
+                  borderStyle: 'dashed',
+                  backgroundColor: theme.palette.action.hover,
+                }
+              })
+            }}
+          >
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeHighlight, rehypeSlug]}
+              components={components}
+            >
+              {block.rawContent}
+            </ReactMarkdown>
+          </Box>
+        );
+      })}
     </Paper>
   );
 };

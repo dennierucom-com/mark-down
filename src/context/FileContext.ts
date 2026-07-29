@@ -11,10 +11,16 @@ export interface MarkdownFile {
 export interface FileContextType {
     files: MarkdownFile[];
     currentFile: MarkdownFile | null;
+    isDirty: boolean;
     addFile: (file: MarkdownFile) => void;
     selectFile: (fileName: string) => void;
     setWorkspaceFiles: (files: MarkdownFile[]) => void;
     clearFiles: () => void;
+    updateCurrentFileContent: (newContent: string) => void;
+    markClean: () => void;
+    saveToHandle: () => Promise<boolean>;
+    saveAsNewFile: () => Promise<boolean>;
+    downloadFile: () => void;
 }
 
 export const FileContext = createContext<FileContextType | undefined>(undefined);
