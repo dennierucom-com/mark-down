@@ -99,6 +99,16 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.removeItem("current_file");
   };
 
+  const updateCurrentFileContent = (newContent: string) => {
+    if (currentFile) {
+      const updatedFile = { ...currentFile, content: newContent };
+      setCurrentFile(updatedFile);
+      setFiles((prev) =>
+        prev.map((f) => (f.name === updatedFile.name ? updatedFile : f))
+      );
+    }
+  };
+
   return (
     <FileContext.Provider
       value={{
@@ -108,6 +118,7 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
         selectFile,
         setWorkspaceFiles,
         clearFiles,
+        updateCurrentFileContent,
       }}
     >
       {children}
