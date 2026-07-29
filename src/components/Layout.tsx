@@ -14,6 +14,8 @@ import {
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -23,6 +25,8 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
+import SaveIcon from "@mui/icons-material/Save";
+import CircleIcon from "@mui/icons-material/Circle";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import Sidebar from "./Sidebar";
@@ -31,6 +35,7 @@ import { useColorMode } from "../context/ThemeContext";
 import { useSearch } from "../context/SearchContext";
 import { useFileActions } from "../hooks/useFileActions";
 import { PWAInstallPrompt } from "./PWAInstallPrompt";
+import SaveDialog from "./SaveDialog";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -40,7 +45,7 @@ const drawerWidth = 280;
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const theme = useTheme();
-  const { currentFile } = useFile();
+  const { currentFile, isDirty } = useFile();
   const { mode, toggleTheme } = useColorMode();
   const {
     searchTerm,
@@ -54,6 +59,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [showSearch, setShowSearch] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -64,6 +72,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        if (isDirty) {
+          setSaveDialogOpen(true);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDirty]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -84,6 +105,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     },
     { icon: <AddIcon />, name: "Add File", onClick: handleManualInject },
     { icon: <DeleteSweepIcon />, name: "Clear Workspace", onClick: clearFiles },
+    { icon: <SaveIcon />, name: "Save", onClick: () => setSaveDialogOpen(true) },
   ];
 
   return (
@@ -117,10 +139,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 variant="h6"
                 noWrap
                 component="div"
-                sx={{ flexGrow: 1 }}
+                sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}
               >
                 {currentFile ? currentFile.name : "Select a file"}
+                {isDirty && (
+                  <CircleIcon sx={{ fontSize: 10, color: theme.palette.warning.main }} />
+                )}
               </Typography>
+              <Tooltip title="Save (Ctrl+S)">
+                <span>
+                  <IconButton 
+                    onClick={() => setSaveDialogOpen(true)} 
+                    color="inherit"
+                    disabled={!isDirty}
+                  >
+                    <SaveIcon />
+                  </IconButton>
+                </span>
+              </Tooltip>
               <Tooltip title="Find in page">
                 <IconButton onClick={handleSearchToggle} color="inherit">
                   <SearchIcon />
@@ -239,6 +275,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           ))}
         </SpeedDial>
       )}
+
+      <SaveDialog 
+        open={saveDialogOpen} 
+        onClose={() => setSaveDialogOpen(false)} 
+        onSuccess={(msg) => {
+          setSnackbarMessage(msg);
+          setSnackbarOpen(true);
+        }}
+      />
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
