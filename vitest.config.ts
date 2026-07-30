@@ -10,6 +10,7 @@ export default mergeConfig(viteConfig, defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
       exclude: [
         'node_modules/',
         'tests/',
