@@ -26,7 +26,18 @@ interface MarkdownReaderProps {
 
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import EditIcon from "@mui/icons-material/Edit";
-import { InputBase, ClickAwayListener } from "@mui/material";
+import SubjectIcon from "@mui/icons-material/Subject";
+import TitleIcon from "@mui/icons-material/Title";
+import CodeIcon from "@mui/icons-material/Code";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
+import TableChartIcon from "@mui/icons-material/TableChart";
+import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
+import HorizontalRuleIcon from "@mui/icons-material/HorizontalRule";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import { InputBase, ClickAwayListener, Popover, List, ListItem, ListItemIcon, ListItemText, Snackbar, Button, ListItemButton } from "@mui/material";
 import { groupMarkdownLines, type MarkdownBlock } from "../utils/markdownLineGrouper";
 
 // ... (existing helper functions)
@@ -38,6 +49,11 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, onContentChang
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [popoverAnchorEl, setPopoverAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [insertionIndex, setInsertionIndex] = useState<number>(-1);
+  const [deleteConfirmBlockId, setDeleteConfirmBlockId] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const { searchTerm, setTotalMatches, currentMatchIndex } = useSearch();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -73,6 +89,47 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, onContentChang
       onContentChange(lines.join('\n'));
     }
     setEditingBlockId(null);
+  };
+
+  const handleAddClick = (event: React.MouseEvent<HTMLButtonElement>, lineIndex: number) => {
+    event.stopPropagation();
+    setPopoverAnchorEl(event.currentTarget);
+    setInsertionIndex(lineIndex);
+  };
+
+  const handlePopoverClose = () => {
+    setPopoverAnchorEl(null);
+  };
+
+  const handleInsertTemplate = (templateContent: string) => {
+    handlePopoverClose();
+    if (onContentChange) {
+      const lines = content.split('\n');
+      const insertAt = insertionIndex;
+      if (insertAt === -1) {
+          lines.unshift(...templateContent.split('\n'));
+      } else {
+          lines.splice(insertAt + 1, 0, ...templateContent.split('\n'));
+      }
+      onContentChange(lines.join('\n'));
+      const newBlockId = `block-${insertAt === -1 ? 0 : insertAt + 1}`;
+      // Use setTimeout so the new block ID is set after the render cycle where the content updates
+      setTimeout(() => {
+        setEditingBlockId(newBlockId);
+        setEditValue(templateContent);
+      }, 50);
+    }
+  };
+
+  const handleDeleteBlock = (block: MarkdownBlock) => {
+    if (onContentChange) {
+      const lines = content.split('\n');
+      lines.splice(block.startLine, block.endLine - block.startLine + 1);
+      onContentChange(lines.join('\n'));
+      setSnackbarMessage("Section deleted");
+      setSnackbarOpen(true);
+    }
+    setDeleteConfirmBlockId(null);
   };
 
   // Effect to handle fullscreen change (ESQ key, etc.)
@@ -478,71 +535,236 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, onContentChang
       </Box>
 
       <GlobalStyles styles={syntaxHighlightStyles} />
-      {blocks.map((block) => {
+      {blocks.map((block, index) => {
         if (block.type === 'empty') return null;
+
+        const addSectionButton = isEditMode && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 1, opacity: 0.3, '&:hover': { opacity: 1 }, transition: 'opacity 0.2s' }}>
+            <IconButton size="small" onClick={(e) => handleAddClick(e, index === 0 ? -1 : blocks[index - 1].endLine)} sx={{ border: `1px solid ${theme.palette.divider}` }}>
+              <AddIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        );
 
         if (isEditMode && editingBlockId === block.id) {
           return (
-            <ClickAwayListener key={block.id} onClickAway={() => handleSaveBlock(block)}>
-              <Box sx={{ my: 1 }}>
-                <InputBase
-                  multiline
-                  fullWidth
-                  autoFocus
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSaveBlock(block);
-                    }
-                  }}
-                  sx={{
-                    fontFamily: 'monospace',
-                    fontSize: '0.875rem',
-                    p: 2,
-                    border: `1px solid ${theme.palette.primary.main}`,
-                    borderRadius: 1,
-                    backgroundColor: theme.palette.background.default,
-                  }}
-                />
-              </Box>
-            </ClickAwayListener>
+            <React.Fragment key={block.id}>
+              {addSectionButton}
+              <ClickAwayListener onClickAway={() => handleSaveBlock(block)}>
+                <Box sx={{ my: 1 }}>
+                  <InputBase
+                    multiline
+                    fullWidth
+                    autoFocus
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && e.ctrlKey) {
+                        e.preventDefault();
+                        const target = e.target as HTMLTextAreaElement;
+                        const start = target.selectionStart;
+                        const end = target.selectionEnd;
+                        const newValue = editValue.substring(0, start) + '\n' + editValue.substring(end);
+                        setEditValue(newValue);
+                        requestAnimationFrame(() => {
+                          if (target) {
+                            target.selectionStart = target.selectionEnd = start + 1;
+                          }
+                        });
+                      } else if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSaveBlock(block);
+                      }
+                      if (e.key === "Escape") {
+                        setEditingBlockId(null);
+                      }
+                    }}
+                    sx={{
+                      fontFamily: 'monospace',
+                      fontSize: '0.875rem',
+                      p: 2,
+                      border: `1px solid ${theme.palette.primary.main}`,
+                      borderRadius: 1,
+                      backgroundColor: theme.palette.background.default,
+                    }}
+                  />
+                  <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5, textAlign: 'right' }}>
+                    Enter to save · Ctrl+Enter for new line · Esc to cancel
+                  </Typography>
+                </Box>
+              </ClickAwayListener>
+            </React.Fragment>
           );
         }
 
         return (
-          <Box
-            key={block.id}
-            onClick={() => {
-              if (isEditMode) {
-                setEditingBlockId(block.id);
-                setEditValue(block.rawContent);
-              }
-            }}
-            sx={{
-              ...(isEditMode && {
-                cursor: 'pointer',
-                borderRadius: 1,
-                border: '1px solid transparent',
-                '&:hover': {
-                  borderColor: theme.palette.primary.main,
-                  borderStyle: 'dashed',
-                  backgroundColor: theme.palette.action.hover,
+          <React.Fragment key={block.id}>
+            {addSectionButton}
+            <Box
+              onClick={() => {
+                if (isEditMode) {
+                  setEditingBlockId(block.id);
+                  setEditValue(block.rawContent);
                 }
-              })
-            }}
-          >
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeHighlight, rehypeSlug]}
-              components={components}
+              }}
+              sx={{
+                position: 'relative',
+                ...(isEditMode && {
+                  cursor: 'pointer',
+                  borderRadius: 1,
+                  border: '1px solid transparent',
+                  '&:hover': {
+                    borderColor: theme.palette.primary.main,
+                    borderStyle: 'dashed',
+                    backgroundColor: theme.palette.action.hover,
+                  },
+                  '&:hover .delete-btn': {
+                    display: 'flex'
+                  }
+                })
+              }}
             >
-              {block.rawContent}
-            </ReactMarkdown>
-          </Box>
+              {isEditMode && (
+                <Box
+                  className="delete-btn"
+                  sx={{
+                    display: 'none',
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    zIndex: 2,
+                    backgroundColor: theme.palette.background.paper,
+                    borderRadius: 1,
+                    boxShadow: 1
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteConfirmBlockId(block.id);
+                  }}
+                >
+                  {deleteConfirmBlockId === block.id ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', p: 0.5 }}>
+                      <Typography variant="caption" sx={{ px: 1, fontWeight: 'bold', color: 'error.main' }}>Delete?</Typography>
+                      <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteBlock(block); }}>
+                        <CheckIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton size="small" onClick={(e) => { e.stopPropagation(); setDeleteConfirmBlockId(null); }}>
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  ) : (
+                    <Tooltip title="Delete block">
+                      <IconButton size="small" color="error">
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
+              )}
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight, rehypeSlug]}
+                components={components}
+              >
+                {block.rawContent}
+              </ReactMarkdown>
+            </Box>
+          </React.Fragment>
         );
       })}
+      
+      {isEditMode && blocks.length > 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, opacity: 0.3, '&:hover': { opacity: 1 }, transition: 'opacity 0.2s' }}>
+          <IconButton onClick={(e) => handleAddClick(e, blocks[blocks.length - 1].endLine)} sx={{ border: `1px solid ${theme.palette.divider}` }}>
+            <AddIcon />
+          </IconButton>
+        </Box>
+      )}
+
+      {isEditMode && blocks.length === 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Button startIcon={<AddIcon />} variant="outlined" onClick={(e) => handleAddClick(e, -1)}>
+            Add First Section
+          </Button>
+        </Box>
+      )}
+
+      <Popover
+        open={Boolean(popoverAnchorEl)}
+        anchorEl={popoverAnchorEl}
+        onClose={handlePopoverClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+      >
+        <List dense sx={{ width: 200 }}>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleInsertTemplate('\n\n')}>
+              <ListItemIcon sx={{ minWidth: 36 }}><SubjectIcon fontSize="small" /></ListItemIcon>
+              <ListItemText primary="Paragraph" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleInsertTemplate('## New Heading\n')}>
+              <ListItemIcon sx={{ minWidth: 36 }}><TitleIcon fontSize="small" /></ListItemIcon>
+              <ListItemText primary="Heading" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleInsertTemplate('```\n\n```')}>
+              <ListItemIcon sx={{ minWidth: 36 }}><CodeIcon fontSize="small" /></ListItemIcon>
+              <ListItemText primary="Code Block" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleInsertTemplate('- Item 1\n- Item 2\n- Item 3\n')}>
+              <ListItemIcon sx={{ minWidth: 36 }}><FormatListBulletedIcon fontSize="small" /></ListItemIcon>
+              <ListItemText primary="Bullet List" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleInsertTemplate('1. Item 1\n2. Item 2\n3. Item 3\n')}>
+              <ListItemIcon sx={{ minWidth: 36 }}><FormatListNumberedIcon fontSize="small" /></ListItemIcon>
+              <ListItemText primary="Numbered List" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleInsertTemplate('| Column 1 | Column 2 |\n| -------- | -------- |\n| Text     | Text     |\n')}>
+              <ListItemIcon sx={{ minWidth: 36 }}><TableChartIcon fontSize="small" /></ListItemIcon>
+              <ListItemText primary="Table" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleInsertTemplate('> Quote text\n')}>
+              <ListItemIcon sx={{ minWidth: 36 }}><FormatQuoteIcon fontSize="small" /></ListItemIcon>
+              <ListItemText primary="Blockquote" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => handleInsertTemplate('---\n')}>
+              <ListItemIcon sx={{ minWidth: 36 }}><HorizontalRuleIcon fontSize="small" /></ListItemIcon>
+              <ListItemText primary="Divider" />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </Popover>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+        action={
+          <IconButton size="small" color="inherit" onClick={() => setSnackbarOpen(false)}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      />
     </Paper>
   );
 };
