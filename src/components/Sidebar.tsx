@@ -96,10 +96,12 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onClose }) => {
           boxSizing: "border-box",
           borderRight: "none",
           backgroundColor: theme.palette.background.default,
+          display: "flex",
+          flexDirection: "column",
         },
       }}
     >
-      <Box sx={{ overflow: "auto", p: 2 }}>
+      <Box sx={{ overflow: "auto", p: 2, flexGrow: 1 }}>
         <Box
           sx={{
             display: "flex",
@@ -222,6 +224,15 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onClose }) => {
             </List>
           </Collapse>
         </List>
+      </Box>
+
+      <Box sx={{ p: 2, mt: 'auto' }}>
+        <Divider sx={{ mb: 2 }} />
+        <Tooltip title={`Build: ${new Date().toISOString().split('T')[0]}`} placement="top" arrow>
+          <Typography variant="caption" sx={{ color: "text.disabled", display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'default' }}>
+            v{__APP_VERSION__} ✨
+          </Typography>
+        </Tooltip>
       </Box>
     </Drawer>
   );
