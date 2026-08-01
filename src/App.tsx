@@ -9,6 +9,7 @@ import { useColorMode } from "./context/ThemeContext";
 import { ThemeContextProvider } from "./context/ThemeContextProvider";
 import { SearchProvider } from "./context/SearchProvider";
 import { PWAProvider } from "./context/PWAProvider";
+import { DialogProvider } from "./context/DialogProvider";
 import Layout from "./components/Layout";
 import MarkdownReader from "./components/MarkdownReader";
 import { sampleMarkdown } from "./sampleMarkdown";
@@ -42,7 +43,9 @@ const MainApp = () => {
       <PWAProvider>
         <SearchProvider>
           <FileProvider>
-            <AppContent />
+            <DialogProvider>
+              <AppContent />
+            </DialogProvider>
           </FileProvider>
         </SearchProvider>
       </PWAProvider>

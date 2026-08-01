@@ -8,11 +8,6 @@ export interface MarkdownFile {
     isImported?: boolean;
 }
 
-export type PendingAction = 
-    | { type: 'switch'; fileName: string }
-    | { type: 'clear' }
-    | { type: 'custom'; action: () => void };
-
 export interface FileContextType {
     files: MarkdownFile[];
     currentFile: MarkdownFile | null;
@@ -26,21 +21,6 @@ export interface FileContextType {
     saveToHandle: () => Promise<boolean>;
     saveAsNewFile: () => Promise<boolean>;
     downloadFile: () => void;
-    pendingAction: PendingAction | null;
-    requestFileSwitch: (fileName: string) => void;
-    requestClearFiles: () => void;
-    requestCustomAction: (action: () => void) => void;
-    confirmPendingAction: () => void;
-    cancelPendingAction: () => void;
-    saveDialogRequested: boolean;
-    requestSave: () => void;
-    clearSaveRequest: () => void;
-    // Save-with-discard flow: triggers UnsavedChangesDialog with a Discard option
-    saveWithDiscardRequested: boolean;
-    requestSaveWithDiscard: (onDiscard: () => void, onCancel: () => void) => void;
-    executeSaveWithDiscardDiscard: () => void;
-    executeSaveWithDiscardCancel: () => void;
-    clearSaveWithDiscardRequest: () => void;
 }
 
 export const FileContext = createContext<FileContextType | undefined>(undefined);

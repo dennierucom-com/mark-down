@@ -1,7 +1,9 @@
 import { useFile, type MarkdownFile } from '../context/FileContext';
+import { useDialog } from '../context/DialogContext';
 
 export const useFileActions = () => {
-    const { addFile, setWorkspaceFiles, requestClearFiles, requestCustomAction } = useFile();
+    const { addFile, setWorkspaceFiles, clearFiles, isDirty } = useFile();
+    const { requestActionWithUnsavedChanges } = useDialog();
 
     const doOpenFolder = async () => {
         try {
@@ -27,7 +29,11 @@ export const useFileActions = () => {
         }
     };
 
-    const handleOpenFolder = () => requestCustomAction(doOpenFolder);
+    const handleOpenFolder = () => requestActionWithUnsavedChanges(
+        { type: 'custom', action: doOpenFolder },
+        isDirty,
+        doOpenFolder
+    );
 
     const handleManualInject = async () => {
         const input = document.createElement('input');
@@ -48,5 +54,11 @@ export const useFileActions = () => {
         input.click();
     };
 
-    return { handleOpenFolder, handleManualInject, clearFiles: requestClearFiles };
+    const handleClearFiles = () => requestActionWithUnsavedChanges(
+        { type: 'clear' },
+        isDirty,
+        clearFiles
+    );
+
+    return { handleOpenFolder, handleManualInject, clearFiles: handleClearFiles };
 };

@@ -1,34 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
-import rehypeSlug from "rehype-slug";
 import {
   Box,
   IconButton,
   Paper,
-  Tooltip,
   GlobalStyles,
   useTheme,
-  Typography
 } from "@mui/material";
-import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
-import EditIcon from "@mui/icons-material/Edit";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import { useSearch } from "../../context/SearchContext";
 import { useFile } from "../../context/FileContext";
+import { useDialog } from "../../context/DialogContext";
 import { groupMarkdownLines, type MarkdownBlock } from "../../utils/markdownLineGrouper";
 
 import { useMarkdownComponents, syntaxHighlightStyles } from "./MarkdownComponents";
-import { MarkdownEditorBlock } from "./MarkdownEditorBlock";
 import { AddSectionPopover } from "./AddSectionPopover";
+import { ReaderToolbar } from "./ReaderToolbar";
+import { MarkdownViewerBlock } from "./MarkdownViewerBlock";
+import { useFullscreen } from "../../hooks/useFullscreen";
 
 interface MarkdownReaderProps {
   content: string;
@@ -38,8 +29,9 @@ interface MarkdownReaderProps {
 
 const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, fileName, onContentChange }) => {
   const theme = useTheme();
-  const { isDirty, requestSaveWithDiscard, markClean } = useFile();
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const { isDirty, markClean } = useFile();
+  const { requestSaveWithDiscard } = useDialog();
+  const { isFullscreen } = useFullscreen();
   const [isElectricMode, setIsElectricMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
@@ -177,15 +169,7 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, fileName, onCo
     setDeleteConfirmBlockId(null);
   };
 
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
-  }, []);
+  // removed local fullscreen listener, now handled by useFullscreen
 
   // Enter fullscreen once isDirty is cleared (user saved or discarded)
   useEffect(() => {
@@ -266,142 +250,47 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, fileName, onCo
         backgroundColor: theme.palette.background.paper,
       }}
     >
-      <Box
-        sx={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          zIndex: 1,
-          display: "flex",
-          gap: 1,
-        }}
-      >
-        {/* Edit mode is incompatible with fullscreen — hide the button while in fullscreen */}
-        {!isFullscreen && (
-          <Tooltip title={isEditMode ? "Disable Edit Mode" : "Enable Edit Mode"}>
-            <IconButton onClick={toggleEditMode} color={isEditMode ? "primary" : "default"}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-        )}
-        <Tooltip title={isElectricMode ? "Disable Electric Mode" : "Enable Electric Mode"}>
-          <IconButton onClick={toggleElectricMode} color={isElectricMode ? "warning" : "default"}>
-            <ElectricBoltIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
-          <IconButton onClick={toggleFullscreen}>
-            {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-          </IconButton>
-        </Tooltip>
-      </Box>
+      <ReaderToolbar
+        isFullscreen={isFullscreen}
+        isEditMode={isEditMode}
+        isElectricMode={isElectricMode}
+        toggleFullscreen={toggleFullscreen}
+        toggleEditMode={toggleEditMode}
+        toggleElectricMode={toggleElectricMode}
+      />
 
       <GlobalStyles styles={syntaxHighlightStyles} />
       {blocks.map((block, index) => {
         if (block.type === 'empty') return null;
 
-        const addSectionButton = isEditMode && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 1, opacity: 0.3, '&:hover': { opacity: 1 }, transition: 'opacity 0.2s' }}>
-            <IconButton size="small" onClick={(e) => handleAddClick(e, index === 0 ? -1 : blocks[index - 1].endLine)} sx={{ border: `1px solid ${theme.palette.divider}` }}>
-              <AddIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        );
-
-        if (isEditMode && editingBlockId === block.id) {
-          return (
-            <React.Fragment key={block.id}>
-              {addSectionButton}
-              <MarkdownEditorBlock
-                initialValue={block.rawContent}
-                onSave={(newContent) => {
-                  activeEditValueRef.current = null;
-                  activeEditBlockRef.current = null;
-                  handleSaveBlock(block, newContent);
-                }}
-                onCancel={() => {
-                  activeEditValueRef.current = null;
-                  activeEditBlockRef.current = null;
-                  setEditingBlockId(null);
-                }}
-                onValueChange={(v) => { activeEditValueRef.current = v; }}
-              />
-            </React.Fragment>
-          );
-        }
-
         return (
-          <React.Fragment key={block.id}>
-            {addSectionButton}
-            <Box
-              onClick={() => {
-                if (isEditMode) {
-                  setEditingBlockId(block.id);
-                }
-              }}
-              sx={{
-                position: 'relative',
-                ...(isEditMode && {
-                  cursor: 'pointer',
-                  borderRadius: 1,
-                  border: '1px solid transparent',
-                  '&:hover': {
-                    borderColor: theme.palette.primary.main,
-                    borderStyle: 'dashed',
-                    backgroundColor: theme.palette.action.hover,
-                  },
-                  '&:hover .delete-btn': {
-                    display: 'flex'
-                  }
-                })
-              }}
-            >
-              {isEditMode && (
-                <Box
-                  className="delete-btn"
-                  sx={{
-                    display: 'none',
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    zIndex: 2,
-                    backgroundColor: theme.palette.background.paper,
-                    borderRadius: 1,
-                    boxShadow: 1
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteConfirmBlockId(block.id);
-                  }}
-                >
-                  {deleteConfirmBlockId === block.id ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', p: 0.5 }}>
-                      <Typography variant="caption" sx={{ px: 1, fontWeight: 'bold', color: 'error.main' }}>Delete?</Typography>
-                      <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteBlock(block); }}>
-                        <CheckIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton size="small" onClick={(e) => { e.stopPropagation(); setDeleteConfirmBlockId(null); }}>
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  ) : (
-                    <Tooltip title="Delete block">
-                      <IconButton size="small" color="error">
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </Box>
-              )}
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight, rehypeSlug]}
-                components={components}
-              >
-                {block.rawContent}
-              </ReactMarkdown>
-            </Box>
-          </React.Fragment>
+          <MarkdownViewerBlock
+            key={block.id}
+            block={block}
+            index={index}
+            prevBlockEndLine={index === 0 ? -1 : blocks[index - 1].endLine}
+            isEditMode={isEditMode}
+            isEditing={isEditMode && editingBlockId === block.id}
+            isConfirmingDelete={deleteConfirmBlockId === block.id}
+            components={components}
+            theme={theme}
+            onEditClick={setEditingBlockId}
+            onAddClick={handleAddClick}
+            onDeleteConfirmClick={setDeleteConfirmBlockId}
+            onDeleteCancel={() => setDeleteConfirmBlockId(null)}
+            onDeleteExecute={handleDeleteBlock}
+            onSave={(b, newContent) => {
+              activeEditValueRef.current = null;
+              activeEditBlockRef.current = null;
+              handleSaveBlock(b, newContent);
+            }}
+            onCancelEdit={() => {
+              activeEditValueRef.current = null;
+              activeEditBlockRef.current = null;
+              setEditingBlockId(null);
+            }}
+            onValueChange={(v) => { activeEditValueRef.current = v; }}
+          />
         );
       })}
       
