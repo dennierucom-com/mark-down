@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -23,6 +23,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
 import { useSearch } from "../../context/SearchContext";
+import { useFile } from "../../context/FileContext";
 import { groupMarkdownLines, type MarkdownBlock } from "../../utils/markdownLineGrouper";
 
 import { useMarkdownComponents, syntaxHighlightStyles } from "./MarkdownComponents";
@@ -31,15 +32,22 @@ import { AddSectionPopover } from "./AddSectionPopover";
 
 interface MarkdownReaderProps {
   content: string;
+  fileName?: string;
   onContentChange?: (newContent: string) => void;
 }
 
-const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, onContentChange }) => {
+const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, fileName, onContentChange }) => {
   const theme = useTheme();
+  const { isDirty, requestSaveWithDiscard, markClean } = useFile();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isElectricMode, setIsElectricMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
+  // Holds the current live value of the active inline editor so we can commit it before fullscreen
+  const activeEditValueRef = useRef<string | null>(null);
+  const activeEditBlockRef = useRef<MarkdownBlock | null>(null);
+  // When true, enter fullscreen as soon as isDirty becomes false
+  const [pendingFullscreenEnter, setPendingFullscreenEnter] = useState(false);
   
   const [popoverAnchorEl, setPopoverAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [insertionIndex, setInsertionIndex] = useState<number>(-1);
@@ -54,15 +62,59 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, onContentChang
   const blocks = React.useMemo(() => groupMarkdownLines(content), [content]);
   const components = useMarkdownComponents(isElectricMode);
 
+  /** Commit any open inline editor block and disable edit mode. */
+  const exitEditMode = useCallback((commitBlock?: { block: MarkdownBlock; value: string }) => {
+    if (commitBlock && commitBlock.value !== commitBlock.block.rawContent && onContentChange) {
+      const lines = content.split('\n');
+      lines.splice(
+        commitBlock.block.startLine,
+        commitBlock.block.endLine - commitBlock.block.startLine + 1,
+        ...commitBlock.value.split('\n')
+      );
+      onContentChange(lines.join('\n'));
+    }
+    setIsEditMode(false);
+    setEditingBlockId(null);
+    setDeleteConfirmBlockId(null);
+    activeEditValueRef.current = null;
+    activeEditBlockRef.current = null;
+  }, [content, onContentChange]);
+
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
+    if (document.fullscreenElement) {
+      // Exiting fullscreen — just exit, no guard needed.
+      document.exitFullscreen();
+      return;
+    }
+
+    // Entering fullscreen:
+    // Step 1 — if a block editor is open, commit its current value first.
+    const commitBlock =
+      activeEditBlockRef.current && activeEditValueRef.current !== null
+        ? { block: activeEditBlockRef.current, value: activeEditValueRef.current }
+        : undefined;
+
+    // Step 2 — disable edit mode (may mark file dirty if commitBlock has changes).
+    exitEditMode(commitBlock);
+
+    // Step 3 — if file is dirty (either pre-existing or just made dirty by the commit above),
+    // ask the user to save first, then enter fullscreen once isDirty becomes false.
+    // We read isDirty here *before* the commit state update settles, so we also check
+    // whether a commit with actual changes is pending.
+    const willBeDirty = isDirty || (commitBlock && commitBlock.value !== commitBlock.block.rawContent);
+    if (willBeDirty) {
+      // Show UnsavedChangesDialog with Save / Discard / Cancel options.
+      // onDiscard: mark file clean → pendingFullscreenEnter resolves automatically.
+      // onCancel: abort the fullscreen entry.
+      requestSaveWithDiscard(
+        markClean,
+        () => setPendingFullscreenEnter(false)
+      );
+      setPendingFullscreenEnter(true);
+    } else {
       containerRef.current?.requestFullscreen().catch((err) => {
         console.error(`Error attempting to enable fullscreen: ${err.message}`);
       });
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
     }
   };
 
@@ -135,6 +187,40 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, onContentChang
     };
   }, []);
 
+  // Enter fullscreen once isDirty is cleared (user saved or discarded)
+  useEffect(() => {
+    if (pendingFullscreenEnter && !isDirty) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPendingFullscreenEnter(false);
+      containerRef.current?.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    }
+  }, [pendingFullscreenEnter, isDirty]);
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setIsEditMode(false);
+    setEditingBlockId(null);
+    setDeleteConfirmBlockId(null);
+    setPendingFullscreenEnter(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    activeEditValueRef.current = null;
+    activeEditBlockRef.current = null;
+  }, [fileName]);
+
+  useEffect(() => {
+    if (isEditMode && editingBlockId) {
+      const activeBlock = blocks.find(b => b.id === editingBlockId);
+      if (activeBlock) {
+        activeEditBlockRef.current = activeBlock;
+        if (activeEditValueRef.current === null) {
+          activeEditValueRef.current = activeBlock.rawContent;
+        }
+      }
+    }
+  }, [isEditMode, editingBlockId, blocks]);
+
   useEffect(() => {
     if (!containerRef.current) return;
     const timeout = setTimeout(() => {
@@ -190,11 +276,14 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, onContentChang
           gap: 1,
         }}
       >
-        <Tooltip title={isEditMode ? "Disable Edit Mode" : "Enable Edit Mode"}>
-          <IconButton onClick={toggleEditMode} color={isEditMode ? "primary" : "default"}>
-            <EditIcon />
-          </IconButton>
-        </Tooltip>
+        {/* Edit mode is incompatible with fullscreen — hide the button while in fullscreen */}
+        {!isFullscreen && (
+          <Tooltip title={isEditMode ? "Disable Edit Mode" : "Enable Edit Mode"}>
+            <IconButton onClick={toggleEditMode} color={isEditMode ? "primary" : "default"}>
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+        )}
         <Tooltip title={isElectricMode ? "Disable Electric Mode" : "Enable Electric Mode"}>
           <IconButton onClick={toggleElectricMode} color={isElectricMode ? "warning" : "default"}>
             <ElectricBoltIcon />
@@ -225,8 +314,17 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, onContentChang
               {addSectionButton}
               <MarkdownEditorBlock
                 initialValue={block.rawContent}
-                onSave={(newContent) => handleSaveBlock(block, newContent)}
-                onCancel={() => setEditingBlockId(null)}
+                onSave={(newContent) => {
+                  activeEditValueRef.current = null;
+                  activeEditBlockRef.current = null;
+                  handleSaveBlock(block, newContent);
+                }}
+                onCancel={() => {
+                  activeEditValueRef.current = null;
+                  activeEditBlockRef.current = null;
+                  setEditingBlockId(null);
+                }}
+                onValueChange={(v) => { activeEditValueRef.current = v; }}
               />
             </React.Fragment>
           );

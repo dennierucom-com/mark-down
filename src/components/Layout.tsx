@@ -36,6 +36,7 @@ import { useSearch } from "../context/SearchContext";
 import { useFileActions } from "../hooks/useFileActions";
 import { PWAInstallPrompt } from "./PWAInstallPrompt";
 import SaveDialog from "./SaveDialog";
+import UnsavedChangesDialog from "./UnsavedChangesDialog";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -45,7 +46,12 @@ const drawerWidth = 280;
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const theme = useTheme();
-  const { currentFile, isDirty } = useFile();
+  const {
+    currentFile, isDirty,
+    pendingAction, confirmPendingAction, cancelPendingAction,
+    saveDialogRequested, clearSaveRequest,
+    saveWithDiscardRequested, executeSaveWithDiscardDiscard, executeSaveWithDiscardCancel, clearSaveWithDiscardRequest,
+  } = useFile();
   const { mode, toggleTheme } = useColorMode();
   const {
     searchTerm,
@@ -72,6 +78,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
+
+  // Open SaveDialog whenever MarkdownReader (or any context consumer) requests a save
+  useEffect(() => {
+    if (saveDialogRequested) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSaveDialogOpen(true);
+      clearSaveRequest();
+    }
+  }, [saveDialogRequested, clearSaveRequest]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -282,7 +297,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         onSuccess={(msg) => {
           setSnackbarMessage(msg);
           setSnackbarOpen(true);
+          if (pendingAction) {
+            confirmPendingAction();
+          }
         }}
+      />
+      <UnsavedChangesDialog
+        open={!!pendingAction}
+        onSave={() => setSaveDialogOpen(true)}
+        onDiscard={confirmPendingAction}
+        onCancel={cancelPendingAction}
+      />
+      {/* Separate dialog for the fullscreen guard — includes a Discard option */}
+      <UnsavedChangesDialog
+        open={saveWithDiscardRequested}
+        onSave={() => {
+          clearSaveWithDiscardRequest();
+          setSaveDialogOpen(true);
+        }}
+        onDiscard={executeSaveWithDiscardDiscard}
+        onCancel={executeSaveWithDiscardCancel}
       />
       <Snackbar
         open={snackbarOpen}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, type ReactNode } from "react";
-import { FileContext, type MarkdownFile } from "./FileContext";
+import { FileContext, type MarkdownFile, type PendingAction } from "./FileContext";
 import { sampleMarkdown } from "../sampleMarkdown";
 
 export const FileProvider: React.FC<{ children: ReactNode }> = ({
@@ -7,6 +7,10 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [files, setFiles] = useState<MarkdownFile[]>([]);
   const [isDirty, setIsDirty] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [saveDialogRequested, setSaveDialogRequested] = useState(false);
+  const [saveWithDiscardRequested, setSaveWithDiscardRequested] = useState(false);
+  const saveWithDiscardCallbacksRef = React.useRef<{ onDiscard: () => void; onCancel: () => void } | null>(null);
   const [currentFile, setCurrentFile] = useState<MarkdownFile | null>(() => {
     const saved = localStorage.getItem("current_file");
     if (saved) {
@@ -191,6 +195,77 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
     setIsDirty(false);
   };
 
+  const requestFileSwitch = (fileName: string) => {
+    if (isDirty) {
+      setPendingAction({ type: 'switch', fileName });
+    } else {
+      selectFile(fileName);
+    }
+  };
+
+  const requestClearFiles = () => {
+    if (isDirty) {
+      setPendingAction({ type: 'clear' });
+    } else {
+      clearFiles();
+    }
+  };
+
+  const requestCustomAction = (action: () => void) => {
+    if (isDirty) {
+      setPendingAction({ type: 'custom', action });
+    } else {
+      action();
+    }
+  };
+
+  const confirmPendingAction = () => {
+    if (!pendingAction) return;
+    
+    if (pendingAction.type === 'switch') {
+      selectFile(pendingAction.fileName);
+    } else if (pendingAction.type === 'clear') {
+      clearFiles();
+    } else if (pendingAction.type === 'custom') {
+      pendingAction.action();
+    }
+    
+    setPendingAction(null);
+    setIsDirty(false);
+  };
+
+  const cancelPendingAction = () => {
+    setPendingAction(null);
+  };
+
+  const requestSave = () => {
+    setSaveDialogRequested(true);
+  };
+
+  const clearSaveRequest = () => {
+    setSaveDialogRequested(false);
+  };
+
+  const requestSaveWithDiscard = (onDiscard: () => void, onCancel: () => void) => {
+    saveWithDiscardCallbacksRef.current = { onDiscard, onCancel };
+    setSaveWithDiscardRequested(true);
+  };
+
+  const clearSaveWithDiscardRequest = () => {
+    saveWithDiscardCallbacksRef.current = null;
+    setSaveWithDiscardRequested(false);
+  };
+
+  const executeSaveWithDiscardDiscard = () => {
+    saveWithDiscardCallbacksRef.current?.onDiscard();
+    clearSaveWithDiscardRequest();
+  };
+
+  const executeSaveWithDiscardCancel = () => {
+    saveWithDiscardCallbacksRef.current?.onCancel();
+    clearSaveWithDiscardRequest();
+  };
+
   return (
     <FileContext.Provider
       value={{
@@ -206,6 +281,20 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
         saveToHandle,
         saveAsNewFile,
         downloadFile,
+        pendingAction,
+        requestFileSwitch,
+        requestClearFiles,
+        requestCustomAction,
+        confirmPendingAction,
+        cancelPendingAction,
+        saveDialogRequested,
+        requestSave,
+        clearSaveRequest,
+        saveWithDiscardRequested,
+        requestSaveWithDiscard,
+        executeSaveWithDiscardDiscard,
+        executeSaveWithDiscardCancel,
+        clearSaveWithDiscardRequest,
       }}
     >
       {children}

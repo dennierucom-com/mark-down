@@ -66,7 +66,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onClose }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { files, selectFile, currentFile } = useFile();
+  const { files, requestFileSwitch, currentFile } = useFile();
   const [openWorkspace, setOpenWorkspace] = useState(true);
   const [openImported, setOpenImported] = useState(true);
 
@@ -74,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onClose }) => {
   const importedFiles = files.filter((f) => f.isImported);
 
   const handleFileClick = (name: string) => {
-    selectFile(name);
+    requestFileSwitch(name);
     if (isMobile && onClose) {
       onClose();
     }

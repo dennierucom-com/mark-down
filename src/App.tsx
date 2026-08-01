@@ -21,6 +21,7 @@ const AppContent = () => {
     <Layout>
       <MarkdownReader 
         content={content} 
+        fileName={currentFile?.name}
         onContentChange={updateCurrentFileContent}
       />
     </Layout>
