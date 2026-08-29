@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# Markdown Editor & Viewer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, fast, and feature-rich Markdown Editor built with React, Vite, and Material-UI. This application offers a seamless experience for creating, editing, and previewing markdown files with advanced features like local file system access, progressive web app (PWA) capabilities, and extensive customization options.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Core Functionality
+- **Dual-Pane Interface**: Edit markdown on one side and see a live preview on the other.
+- **File System Access**: Open, edit, and save files directly to your local file system (using the File System Access API).
+- **Workspace Management**: Manage multiple markdown files in a sidebar.
+- **Unsaved Changes Dialog**: Get prompted to save your work before closing or navigating away from dirty files.
+- **Keyboard Shortcuts**: Navigate and control the application using convenient keyboard shortcuts (e.g., Ctrl+S to save).
 
-## React Compiler
+### UI & UX
+- **Dynamic Theming**: Support for both Light and Dark modes, with customizable Material Design color palettes.
+- **Top App Bar**: Quick access to file operations, theme switching, and viewing modes.
+- **Action Speed Dial**: Floating action button for quick actions on mobile/smaller screens.
+- **Fullscreen Mode**: Immerse yourself in writing or reading without distractions.
+- **Reader Toolbar**: Easily switch between Editor-only, Viewer-only, or Split-pane views.
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+### Technical Highlights
+- **React + Vite**: Fast development server and optimized production builds.
+- **Progressive Web App (PWA)**: Install the app on your device for offline use and a native-like experience.
+- **Material-UI (MUI)**: Beautiful and responsive component library.
+- **TypeScript**: Fully typed codebase for reliability and maintainability.
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd mark-down
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Project Structure
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- `src/components/`: Reusable UI components (Sidebar, Layout, TopAppBar, ActionSpeedDial, etc.)
+- `src/components/MarkdownReader/`: Core markdown editing and viewing components.
+- `src/context/`: React Context providers for state management (FileContext, ThemeContext, DialogContext, etc.)
+- `src/hooks/`: Custom React hooks (useFullscreen, useKeyboardShortcuts, etc.)
+- `src/theme/`: Material-UI theme configurations and color palettes.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Recent Updates
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Added `TopAppBar` and `ActionSpeedDial` for improved navigation and mobile support.
+- Refactored context and state management into modular providers (`DialogProvider`, `FileProvider`, etc.).
+- Introduced `useFullscreen` and `useKeyboardShortcuts` hooks for enhanced user experience.
+- Added `UnsavedChangesDialog` to prevent accidental data loss.
+- Improved Markdown Reader with customizable toolbars and flexible viewing modes.

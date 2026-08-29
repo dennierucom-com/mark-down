@@ -5,9 +5,10 @@ interface MarkdownEditorBlockProps {
   initialValue: string;
   onSave: (newContent: string) => void;
   onCancel: () => void;
+  onValueChange?: (value: string) => void;
 }
 
-export const MarkdownEditorBlock: React.FC<MarkdownEditorBlockProps> = ({ initialValue, onSave, onCancel }) => {
+export const MarkdownEditorBlock: React.FC<MarkdownEditorBlockProps> = ({ initialValue, onSave, onCancel, onValueChange }) => {
   const theme = useTheme();
   const [editValue, setEditValue] = useState(initialValue);
 
@@ -19,15 +20,26 @@ export const MarkdownEditorBlock: React.FC<MarkdownEditorBlockProps> = ({ initia
     onSave(editValue);
   };
 
+  const handleClickAway = () => {
+    if (editValue !== initialValue) {
+      onSave(editValue);
+    } else {
+      onCancel();
+    }
+  };
+
   return (
-    <ClickAwayListener onClickAway={handleSave}>
+    <ClickAwayListener onClickAway={handleClickAway}>
       <Box sx={{ my: 1 }}>
         <InputBase
           multiline
           fullWidth
           autoFocus
           value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
+          onChange={(e) => {
+            setEditValue(e.target.value);
+            onValueChange?.(e.target.value);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && e.ctrlKey) {
               e.preventDefault();
@@ -36,6 +48,7 @@ export const MarkdownEditorBlock: React.FC<MarkdownEditorBlockProps> = ({ initia
               const end = target.selectionEnd;
               const newValue = editValue.substring(0, start) + '\n' + editValue.substring(end);
               setEditValue(newValue);
+              onValueChange?.(newValue);
               requestAnimationFrame(() => {
                 if (target) {
                   target.selectionStart = target.selectionEnd = start + 1;

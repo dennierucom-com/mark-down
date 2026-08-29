@@ -21,6 +21,7 @@ import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
 import { useFile } from "../context/FileContext";
+import { useDialog } from "../context/DialogContext";
 
 const drawerWidth = 280;
 
@@ -66,7 +67,8 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onClose }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { files, selectFile, currentFile } = useFile();
+  const { files, selectFile, currentFile, isDirty } = useFile();
+  const { requestActionWithUnsavedChanges } = useDialog();
   const [openWorkspace, setOpenWorkspace] = useState(true);
   const [openImported, setOpenImported] = useState(true);
 
@@ -74,7 +76,11 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen = false, onClose }) => {
   const importedFiles = files.filter((f) => f.isImported);
 
   const handleFileClick = (name: string) => {
-    selectFile(name);
+    requestActionWithUnsavedChanges(
+      { type: 'switch', fileName: name },
+      isDirty,
+      () => selectFile(name)
+    );
     if (isMobile && onClose) {
       onClose();
     }

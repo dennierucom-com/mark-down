@@ -1,9 +1,11 @@
 import { useFile, type MarkdownFile } from '../context/FileContext';
+import { useDialog } from '../context/DialogContext';
 
 export const useFileActions = () => {
-    const { addFile, setWorkspaceFiles, clearFiles } = useFile();
+    const { addFile, setWorkspaceFiles, clearFiles, isDirty } = useFile();
+    const { requestActionWithUnsavedChanges } = useDialog();
 
-    const handleOpenFolder = async () => {
+    const doOpenFolder = async () => {
         try {
             // @ts-expect-error - File System Access API
             const dirHandle = await window.showDirectoryPicker();
@@ -27,6 +29,12 @@ export const useFileActions = () => {
         }
     };
 
+    const handleOpenFolder = () => requestActionWithUnsavedChanges(
+        { type: 'custom', action: doOpenFolder },
+        isDirty,
+        doOpenFolder
+    );
+
     const handleManualInject = async () => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -46,5 +54,11 @@ export const useFileActions = () => {
         input.click();
     };
 
-    return { handleOpenFolder, handleManualInject, clearFiles };
+    const handleClearFiles = () => requestActionWithUnsavedChanges(
+        { type: 'clear' },
+        isDirty,
+        clearFiles
+    );
+
+    return { handleOpenFolder, handleManualInject, clearFiles: handleClearFiles };
 };
