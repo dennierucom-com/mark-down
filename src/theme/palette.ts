@@ -90,7 +90,7 @@ const blueLight: AppPalette = {
     text: { primary: '#1A1C1E', secondary: '#44474E' },
     codeBlock: { background: '#f6f8fa', headerBackground: '#e3edf7' },
     search: { activeHighlight: '#ff9800', highlight: '#BBDEFB', highlightText: '#000000' },
-    electric: { glow: '#64B5F6', glowText: '#000000' },
+    electric: { glow: '#BBDEFB', glowText: '#000000' },
 };
 
 const blueDark: AppPalette = {
@@ -100,7 +100,7 @@ const blueDark: AppPalette = {
     text: { primary: '#E2E2E6', secondary: '#C4C6CF' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#1565C0', highlightText: '#FFFFFF' },
-    electric: { glow: '#64B5F6', glowText: '#000000' },
+    electric: { glow: '#1565C0', glowText: '#000000' },
 };
 
 // ─── 3. Green (#4caf50) ───────────────────────────────────────────
@@ -112,7 +112,7 @@ const greenLight: AppPalette = {
     text: { primary: '#1A1C18', secondary: '#44483E' },
     codeBlock: { background: '#f6f8f4', headerBackground: '#e5ede0' },
     search: { activeHighlight: '#ff9800', highlight: '#C8E6C9', highlightText: '#000000' },
-    electric: { glow: '#81C784', glowText: '#000000' },
+    electric: { glow: '#C8E6C9', glowText: '#000000' },
 };
 
 const greenDark: AppPalette = {
@@ -122,7 +122,7 @@ const greenDark: AppPalette = {
     text: { primary: '#E2E3DB', secondary: '#C5C8BC' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#2E7D32', highlightText: '#FFFFFF' },
-    electric: { glow: '#81C784', glowText: '#000000' },
+    electric: { glow: '#2E7D32', glowText: '#000000' },
 };
 
 // ─── 4. Blue Grey (#607d8b) ───────────────────────────────────────
@@ -134,7 +134,7 @@ const blueGreyLight: AppPalette = {
     text: { primary: '#1C1F21', secondary: '#44484B' },
     codeBlock: { background: '#f3f5f7', headerBackground: '#e0e4e8' },
     search: { activeHighlight: '#ff9800', highlight: '#CFD8DC', highlightText: '#000000' },
-    electric: { glow: '#90A4AE', glowText: '#000000' },
+    electric: { glow: '#CFD8DC', glowText: '#000000' },
 };
 
 const blueGreyDark: AppPalette = {
@@ -144,7 +144,7 @@ const blueGreyDark: AppPalette = {
     text: { primary: '#E1E3E4', secondary: '#C3C7CA' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#455A64', highlightText: '#FFFFFF' },
-    electric: { glow: '#90A4AE', glowText: '#000000' },
+    electric: { glow: '#455A64', glowText: '#000000' },
 };
 
 // ─── 5. Red (#f44336) ─────────────────────────────────────────────
@@ -156,7 +156,7 @@ const redLight: AppPalette = {
     text: { primary: '#201A19', secondary: '#534341' },
     codeBlock: { background: '#f8f6f5', headerBackground: '#f0e6e4' },
     search: { activeHighlight: '#ff9800', highlight: '#FFCDD2', highlightText: '#000000' },
-    electric: { glow: '#EF9A9A', glowText: '#000000' },
+    electric: { glow: '#FFCDD2', glowText: '#000000' },
 };
 
 const redDark: AppPalette = {
@@ -166,7 +166,7 @@ const redDark: AppPalette = {
     text: { primary: '#EDE0DE', secondary: '#D8C2BF' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#C62828', highlightText: '#FFFFFF' },
-    electric: { glow: '#EF9A9A', glowText: '#000000' },
+    electric: { glow: '#C62828', glowText: '#000000' },
 };
 
 // ─── 6. Pink (#E91E63) ────────────────────────────────────────────
@@ -177,7 +177,7 @@ const pinkLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#f8f5f6', headerBackground: '#f2eef0' },
     search: { activeHighlight: '#ff9800', highlight: '#F8BBD0', highlightText: '#000000' },
-    electric: { glow: '#F48FB1', glowText: '#000000' },
+    electric: { glow: '#F8BBD0', glowText: '#000000' },
 };
 
 const pinkDark: AppPalette = {
@@ -187,7 +187,7 @@ const pinkDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#C2185B', highlightText: '#FFFFFF' },
-    electric: { glow: '#F48FB1', glowText: '#000000' },
+    electric: { glow: '#C2185B', glowText: '#000000' },
 };
 
 // ─── 7. Material Purple (#9C27B0) ─────────────────────────────────
@@ -198,7 +198,7 @@ const materialPurpleLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#f7f5f8', headerBackground: '#efecef' },
     search: { activeHighlight: '#ff9800', highlight: '#E1BEE7', highlightText: '#000000' },
-    electric: { glow: '#CE93D8', glowText: '#000000' },
+    electric: { glow: '#E1BEE7', glowText: '#000000' },
 };
 
 const materialPurpleDark: AppPalette = {
@@ -208,7 +208,7 @@ const materialPurpleDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#7B1FA2', highlightText: '#FFFFFF' },
-    electric: { glow: '#CE93D8', glowText: '#000000' },
+    electric: { glow: '#7B1FA2', glowText: '#000000' },
 };
 
 // ─── 8. Deep Purple (#673AB7) ─────────────────────────────────────
@@ -219,7 +219,7 @@ const deepPurpleLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#f5f4f8', headerBackground: '#efedf3' },
     search: { activeHighlight: '#ff9800', highlight: '#D1C4E9', highlightText: '#000000' },
-    electric: { glow: '#B39DDB', glowText: '#000000' },
+    electric: { glow: '#D1C4E9', glowText: '#000000' },
 };
 
 const deepPurpleDark: AppPalette = {
@@ -229,7 +229,7 @@ const deepPurpleDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#512DA8', highlightText: '#FFFFFF' },
-    electric: { glow: '#B39DDB', glowText: '#000000' },
+    electric: { glow: '#512DA8', glowText: '#000000' },
 };
 
 // ─── 9. Indigo (#3F51B5) ──────────────────────────────────────────
@@ -240,7 +240,7 @@ const indigoLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#f4f5f8', headerBackground: '#ecedf3' },
     search: { activeHighlight: '#ff9800', highlight: '#C5CAE9', highlightText: '#000000' },
-    electric: { glow: '#9FA8DA', glowText: '#000000' },
+    electric: { glow: '#C5CAE9', glowText: '#000000' },
 };
 
 const indigoDark: AppPalette = {
@@ -250,7 +250,7 @@ const indigoDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#303F9F', highlightText: '#FFFFFF' },
-    electric: { glow: '#9FA8DA', glowText: '#000000' },
+    electric: { glow: '#303F9F', glowText: '#000000' },
 };
 
 // ─── 10. Light Blue (#03A9F4) ─────────────────────────────────────
@@ -261,7 +261,7 @@ const lightBlueLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#f3f8fa', headerBackground: '#e5eff4' },
     search: { activeHighlight: '#ff9800', highlight: '#B3E5FC', highlightText: '#000000' },
-    electric: { glow: '#81D4FA', glowText: '#000000' },
+    electric: { glow: '#B3E5FC', glowText: '#000000' },
 };
 
 const lightBlueDark: AppPalette = {
@@ -271,7 +271,7 @@ const lightBlueDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#0288D1', highlightText: '#FFFFFF' },
-    electric: { glow: '#81D4FA', glowText: '#000000' },
+    electric: { glow: '#0288D1', glowText: '#000000' },
 };
 
 // ─── 11. Cyan (#00BCD4) ───────────────────────────────────────────
@@ -282,7 +282,7 @@ const cyanLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#f2f9f9', headerBackground: '#e4f1f2' },
     search: { activeHighlight: '#ff9800', highlight: '#B2EBF2', highlightText: '#000000' },
-    electric: { glow: '#80DEEA', glowText: '#000000' },
+    electric: { glow: '#B2EBF2', glowText: '#000000' },
 };
 
 const cyanDark: AppPalette = {
@@ -292,7 +292,7 @@ const cyanDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#0097A7', highlightText: '#FFFFFF' },
-    electric: { glow: '#80DEEA', glowText: '#000000' },
+    electric: { glow: '#0097A7', glowText: '#000000' },
 };
 
 // ─── 12. Teal (#009688) ───────────────────────────────────────────
@@ -303,7 +303,7 @@ const tealLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#f2f8f7', headerBackground: '#e3f1ef' },
     search: { activeHighlight: '#ff9800', highlight: '#B2DFDB', highlightText: '#000000' },
-    electric: { glow: '#80CBC4', glowText: '#000000' },
+    electric: { glow: '#B2DFDB', glowText: '#000000' },
 };
 
 const tealDark: AppPalette = {
@@ -313,7 +313,7 @@ const tealDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#00796B', highlightText: '#FFFFFF' },
-    electric: { glow: '#80CBC4', glowText: '#000000' },
+    electric: { glow: '#00796B', glowText: '#000000' },
 };
 
 // ─── 13. Light Green (#8BC34A) ────────────────────────────────────
@@ -324,7 +324,7 @@ const lightGreenLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#f6f9f3', headerBackground: '#ebf2e5' },
     search: { activeHighlight: '#ff9800', highlight: '#DCEDC8', highlightText: '#000000' },
-    electric: { glow: '#C5E1A5', glowText: '#000000' },
+    electric: { glow: '#DCEDC8', glowText: '#000000' },
 };
 
 const lightGreenDark: AppPalette = {
@@ -334,7 +334,7 @@ const lightGreenDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#689F38', highlightText: '#FFFFFF' },
-    electric: { glow: '#C5E1A5', glowText: '#000000' },
+    electric: { glow: '#689F38', glowText: '#000000' },
 };
 
 // ─── 14. Lime (#CDDC39) ───────────────────────────────────────────
@@ -345,7 +345,7 @@ const limeLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#f9faf5', headerBackground: '#eff2e3' },
     search: { activeHighlight: '#ff9800', highlight: '#F0F4C3', highlightText: '#000000' },
-    electric: { glow: '#E6EE9C', glowText: '#000000' },
+    electric: { glow: '#F0F4C3', glowText: '#000000' },
 };
 
 const limeDark: AppPalette = {
@@ -355,7 +355,7 @@ const limeDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#AFB42B', highlightText: '#FFFFFF' },
-    electric: { glow: '#E6EE9C', glowText: '#000000' },
+    electric: { glow: '#AFB42B', glowText: '#000000' },
 };
 
 // ─── 15. Yellow (#FFEB3B) ─────────────────────────────────────────
@@ -366,7 +366,7 @@ const yellowLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#fbfbf2', headerBackground: '#f5f4e6' },
     search: { activeHighlight: '#ff9800', highlight: '#FFF9C4', highlightText: '#000000' },
-    electric: { glow: '#FFF59D', glowText: '#000000' },
+    electric: { glow: '#FFF9C4', glowText: '#000000' },
 };
 
 const yellowDark: AppPalette = {
@@ -376,7 +376,7 @@ const yellowDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#FBC02D', highlightText: '#000000' },
-    electric: { glow: '#FFF59D', glowText: '#000000' },
+    electric: { glow: '#FBC02D', glowText: '#000000' },
 };
 
 // ─── 16. Amber (#FFC107) ──────────────────────────────────────────
@@ -387,7 +387,7 @@ const amberLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#fbf8f3', headerBackground: '#f4ede1' },
     search: { activeHighlight: '#ff9800', highlight: '#FFECB3', highlightText: '#000000' },
-    electric: { glow: '#FFE082', glowText: '#000000' },
+    electric: { glow: '#FFECB3', glowText: '#000000' },
 };
 
 const amberDark: AppPalette = {
@@ -397,7 +397,7 @@ const amberDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#FFA000', highlightText: '#000000' },
-    electric: { glow: '#FFE082', glowText: '#000000' },
+    electric: { glow: '#FFA000', glowText: '#000000' },
 };
 
 // ─── 17. Orange (#FF9800) ─────────────────────────────────────────
@@ -408,7 +408,7 @@ const orangeLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#fbf6f2', headerBackground: '#f3e8dd' },
     search: { activeHighlight: '#ff9800', highlight: '#FFE0B2', highlightText: '#000000' },
-    electric: { glow: '#FFCC80', glowText: '#000000' },
+    electric: { glow: '#FFE0B2', glowText: '#000000' },
 };
 
 const orangeDark: AppPalette = {
@@ -418,7 +418,7 @@ const orangeDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#F57C00', highlightText: '#FFFFFF' },
-    electric: { glow: '#FFCC80', glowText: '#000000' },
+    electric: { glow: '#F57C00', glowText: '#000000' },
 };
 
 // ─── 18. Deep Orange (#FF5722) ────────────────────────────────────
@@ -429,7 +429,7 @@ const deepOrangeLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#fbf4f2', headerBackground: '#f2e5df' },
     search: { activeHighlight: '#ff9800', highlight: '#FFCCBC', highlightText: '#000000' },
-    electric: { glow: '#FFAB91', glowText: '#000000' },
+    electric: { glow: '#FFCCBC', glowText: '#000000' },
 };
 
 const deepOrangeDark: AppPalette = {
@@ -439,7 +439,7 @@ const deepOrangeDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#E64A19', highlightText: '#FFFFFF' },
-    electric: { glow: '#FFAB91', glowText: '#000000' },
+    electric: { glow: '#E64A19', glowText: '#000000' },
 };
 
 // ─── 19. Brown (#795548) ──────────────────────────────────────────
@@ -450,7 +450,7 @@ const brownLight: AppPalette = {
     text: { primary: '#1C1B1F', secondary: '#49454F' },
     codeBlock: { background: '#f8f6f5', headerBackground: '#edebe9' },
     search: { activeHighlight: '#ff9800', highlight: '#D7CCC8', highlightText: '#000000' },
-    electric: { glow: '#BCAAA4', glowText: '#000000' },
+    electric: { glow: '#D7CCC8', glowText: '#000000' },
 };
 
 const brownDark: AppPalette = {
@@ -460,7 +460,7 @@ const brownDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#5D4037', highlightText: '#FFFFFF' },
-    electric: { glow: '#BCAAA4', glowText: '#000000' },
+    electric: { glow: '#5D4037', glowText: '#000000' },
 };
 
 // ─── 20. Grey (#9E9E9E) ───────────────────────────────────────────
@@ -481,7 +481,7 @@ const greyDark: AppPalette = {
     text: { primary: '#E6E1E5', secondary: '#CAC4D0' },
     codeBlock: { background: '#0d1117', headerBackground: '#161b22' },
     search: { activeHighlight: '#ff9800', highlight: '#616161', highlightText: '#FFFFFF' },
-    electric: { glow: '#EEEEEE', glowText: '#000000' },
+    electric: { glow: '#616161', glowText: '#000000' },
 };
 
 // ─── All Palettes ─────────────────────────────────────────────────

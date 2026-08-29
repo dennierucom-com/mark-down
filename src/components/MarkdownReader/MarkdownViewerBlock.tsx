@@ -150,12 +150,14 @@ export const MarkdownViewerBlock: React.FC<MarkdownViewerBlockProps> = React.mem
   );
 }, (prevProps, nextProps) => {
   // Custom equality check for React.memo to optimize re-renders
+  // NOTE: components must be included — it carries isElectricMode and searchTerm state
   return (
     prevProps.block.rawContent === nextProps.block.rawContent &&
     prevProps.isEditMode === nextProps.isEditMode &&
     prevProps.isEditing === nextProps.isEditing &&
     prevProps.isConfirmingDelete === nextProps.isConfirmingDelete &&
-    prevProps.prevBlockEndLine === nextProps.prevBlockEndLine
+    prevProps.prevBlockEndLine === nextProps.prevBlockEndLine &&
+    prevProps.components === nextProps.components
   );
 });
 
