@@ -12,7 +12,7 @@ A modern, fast, and feature-rich Markdown Editor built with React, Vite, and Mat
 - **Keyboard Shortcuts**: Navigate and control the application using convenient keyboard shortcuts (e.g., Ctrl+S to save).
 
 ### UI & UX
-- **Dynamic Theming**: Support for both Light and Dark modes, with customizable Material Design color palettes.
+- **Dynamic Theming**: Support for both Light and Dark modes, with 19 customizable Material Design 2014 color palettes (rotates randomly).
 - **Top App Bar**: Quick access to file operations, theme switching, and viewing modes.
 - **Action Speed Dial**: Floating action button for quick actions on mobile/smaller screens.
 - **Fullscreen Mode**: Immerse yourself in writing or reading without distractions.
@@ -59,6 +59,7 @@ A modern, fast, and feature-rich Markdown Editor built with React, Vite, and Mat
 
 ## Recent Updates
 
+- **Expanded Dynamic Theming**: Integrated all 19 official color palettes from the 2014 Material Design specifications.
 - Added `TopAppBar` and `ActionSpeedDial` for improved navigation and mobile support.
 - Refactored context and state management into modular providers (`DialogProvider`, `FileProvider`, etc.).
 - Introduced `useFullscreen` and `useKeyboardShortcuts` hooks for enhanced user experience.
