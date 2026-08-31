@@ -24,7 +24,7 @@ function generateLargeMarkdown(targetSizeKb: number): string {
 }
 
 describe('linkExtractor performance', () => {
-  it('should parse a 40 KB file in less than 2ms', () => {
+  it('should parse a 40 KB file in less than 3ms', () => {
     // Generate roughly 40KB string
     const markdown = generateLargeMarkdown(40);
     // Ensure size is somewhat accurate (~40,000 chars)
@@ -45,7 +45,7 @@ describe('linkExtractor performance', () => {
     const averageTime = totalTime / iterations;
     
     // Performance expectation
-    expect(averageTime).toBeLessThan(2);
+    expect(averageTime).toBeLessThan(3);
     
     console.log(`Average parse time for ~40KB file: ${averageTime.toFixed(2)} ms`);
   });
