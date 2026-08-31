@@ -70,6 +70,13 @@ const user: User = {
 - [GitHub](https://github.com)
 - [React Documentation](https://react.dev)
 
+#### WikiLinks & Anchors (New Feature!)
+You can now use Obsidian-style WikiLinks and Markdown anchor links:
+- [[Welcome Note]]
+- [[Welcome Note|Click here for the Welcome Note]]
+- [[Welcome Note#Features Supported]]
+- [Jump to Tables](#tables)
+
 ### Blockquotes
 
 > This is a blockquote.

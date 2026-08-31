@@ -182,33 +182,33 @@ export const useMarkdownComponents = (isElectricMode: boolean) => {
         <TextWrapper>{children}</TextWrapper>
       </Typography>
     ),
-    h1: ({ children }) => (
-      <Typography variant="h1" gutterBottom>
+    h1: ({ children, ...props }) => (
+      <Typography variant="h1" gutterBottom id={props.id}>
         <TextWrapper>{children}</TextWrapper>
       </Typography>
     ),
-    h2: ({ children }) => (
-      <Typography variant="h2" gutterBottom>
+    h2: ({ children, ...props }) => (
+      <Typography variant="h2" gutterBottom id={props.id}>
         <TextWrapper>{children}</TextWrapper>
       </Typography>
     ),
-    h3: ({ children }) => (
-      <Typography variant="h3" gutterBottom>
+    h3: ({ children, ...props }) => (
+      <Typography variant="h3" gutterBottom id={props.id}>
         <TextWrapper>{children}</TextWrapper>
       </Typography>
     ),
-    h4: ({ children }) => (
-      <Typography variant="h4" gutterBottom>
+    h4: ({ children, ...props }) => (
+      <Typography variant="h4" gutterBottom id={props.id}>
         <TextWrapper>{children}</TextWrapper>
       </Typography>
     ),
-    h5: ({ children }) => (
-      <Typography variant="h5" gutterBottom>
+    h5: ({ children, ...props }) => (
+      <Typography variant="h5" gutterBottom id={props.id}>
         <TextWrapper>{children}</TextWrapper>
       </Typography>
     ),
-    h6: ({ children }) => (
-      <Typography variant="h6" gutterBottom>
+    h6: ({ children, ...props }) => (
+      <Typography variant="h6" gutterBottom id={props.id}>
         <TextWrapper>{children}</TextWrapper>
       </Typography>
     ),
