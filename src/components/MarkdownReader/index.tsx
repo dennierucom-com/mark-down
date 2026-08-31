@@ -29,7 +29,7 @@ interface MarkdownReaderProps {
 
 const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, fileName, onContentChange }) => {
   const theme = useTheme();
-  const { isDirty, markClean } = useFile();
+  const { isDirty, markClean, selectFile, files } = useFile();
   const { requestSaveWithDiscard } = useDialog();
   const { isFullscreen } = useFullscreen();
   const [isElectricMode, setIsElectricMode] = useState(false);
@@ -52,7 +52,27 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = ({ content, fileName, onCo
   const containerRef = useRef<HTMLDivElement>(null);
 
   const blocks = React.useMemo(() => groupMarkdownLines(content), [content]);
-  const components = useMarkdownComponents(isElectricMode);
+
+  const handleNavigate = useCallback((targetName: string, anchor?: string) => {
+    // Try to find the file in the workspace
+    const found = files.find(f => 
+      f.name === targetName || 
+      f.path === targetName ||
+      f.name === targetName + '.md'
+    );
+    if (found) {
+      selectFile(found.name);
+      if (anchor) {
+        // Scroll to anchor after a short delay to let the content render
+        setTimeout(() => {
+          const el = document.getElementById(anchor);
+          el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      }
+    }
+  }, [files, selectFile]);
+
+  const components = useMarkdownComponents(isElectricMode, handleNavigate);
 
   /** Commit any open inline editor block and disable edit mode. */
   const exitEditMode = useCallback((commitBlock?: { block: MarkdownBlock; value: string }) => {

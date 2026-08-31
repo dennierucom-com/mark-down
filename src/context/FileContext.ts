@@ -4,6 +4,7 @@ export interface MarkdownFile {
     name: string;
     path?: string; // Optional path (mostly for FS Access files)
     content: string;
+    lastModified?: number; // Optional last modified timestamp
     handle?: FileSystemFileHandle; // Optional handle for saving back
     isImported?: boolean;
 }

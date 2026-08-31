@@ -76,6 +76,8 @@ You can now use Obsidian-style WikiLinks and Markdown anchor links:
 - [[Welcome Note|Click here for the Welcome Note]]
 - [[Welcome Note#Features Supported]]
 - [Jump to Tables](#tables)
+- [[Missing Feature]] (Demonstrates phantom nodes)
+- [Broken Link](does-not-exist.md) (Demonstrates broken links)
 
 ### Blockquotes
 

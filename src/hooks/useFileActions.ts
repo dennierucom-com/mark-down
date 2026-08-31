@@ -19,6 +19,7 @@ export const useFileActions = () => {
                         name: entry.name,
                         path: entry.name,
                         content: text,
+                        lastModified: file.lastModified,
                         handle: entry
                     });
                 }
