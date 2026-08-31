@@ -1,11 +1,21 @@
 import React, { useState, useEffect, type ReactNode } from "react";
 import { FileContext, type MarkdownFile } from "./FileContext";
 import { sampleMarkdown } from "../sampleMarkdown";
+import { featuresMarkdown } from "../featuresMarkdown";
 
 export const FileProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [files, setFiles] = useState<MarkdownFile[]>([]);
+  const defaultFiles: MarkdownFile[] = [
+    { name: "Welcome.md", content: sampleMarkdown, isImported: true },
+    { name: "Features.md", content: featuresMarkdown, isImported: true }
+  ];
+
+  const [files, setFiles] = useState<MarkdownFile[]>(() => {
+    const saved = localStorage.getItem("current_file");
+    if (!saved) return defaultFiles;
+    return defaultFiles; // We always want these in the workspace for demo purposes
+  });
   const [isDirty, setIsDirty] = useState(false);
   const [currentFile, setCurrentFile] = useState<MarkdownFile | null>(() => {
     const saved = localStorage.getItem("current_file");
@@ -79,13 +89,12 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const clearFiles = () => {
-    setFiles([]);
-    const defaultFile: MarkdownFile = {
-      name: "Welcome.md",
-      content: sampleMarkdown,
-      isImported: true,
-    };
-    setCurrentFile(defaultFile);
+    const defaultFiles: MarkdownFile[] = [
+      { name: "Welcome.md", content: sampleMarkdown, isImported: true },
+      { name: "Features.md", content: featuresMarkdown, isImported: true }
+    ];
+    setFiles(defaultFiles);
+    setCurrentFile(defaultFiles[0]);
     localStorage.removeItem("current_file");
     setIsDirty(false);
   };

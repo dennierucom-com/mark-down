@@ -5,7 +5,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import type { Components } from 'react-markdown';
 import { useSearch } from '../../context/SearchContext';
 
-export const useMarkdownComponents = (isElectricMode: boolean) => {
+export const useMarkdownComponents = (isElectricMode: boolean, onNavigate?: (fileName: string, anchor?: string) => void) => {
   const theme = useTheme();
   const { searchTerm } = useSearch();
 
@@ -255,6 +255,46 @@ export const useMarkdownComponents = (isElectricMode: boolean) => {
         <TextWrapper>{children}</TextWrapper>
       </Box>
     ),
+    a: ({ href, children, ...props }) => {
+      const isExternal = href?.startsWith('http://') || href?.startsWith('https://');
+      const isAnchor = href?.startsWith('#');
+
+      if (isExternal) {
+        return (
+          <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+            {children}
+          </a>
+        );
+      }
+
+      if (isAnchor) {
+        return <a href={href} {...props}>{children}</a>;
+      }
+
+      // Internal link — navigate between files
+      const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (onNavigate && href) {
+          const hashIndex = href.indexOf('#');
+          if (hashIndex > -1) {
+            onNavigate(href.substring(0, hashIndex), href.substring(hashIndex + 1));
+          } else {
+            onNavigate(href);
+          }
+        }
+      };
+
+      return (
+        <a
+          href={href}
+          onClick={handleClick}
+          style={{ cursor: 'pointer', color: theme.palette.primary.main, textDecoration: 'underline' }}
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    },
   };
 
   return components;
