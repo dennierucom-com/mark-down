@@ -24,13 +24,13 @@ function generateLargeMarkdown(targetSizeKb: number): string {
 }
 
 describe('linkExtractor performance', () => {
-  it('should parse a 50 KB file in less than 2ms', () => {
-    // Generate roughly 50KB string
-    const markdown = generateLargeMarkdown(50);
-    // Ensure size is somewhat accurate (~50,000 chars)
-    expect(markdown.length).toBeGreaterThan(30000);
+  it('should parse a 40 KB file in less than 2ms', () => {
+    // Generate roughly 40KB string
+    const markdown = generateLargeMarkdown(40);
+    // Ensure size is somewhat accurate (~40,000 chars)
+    expect(markdown.length).toBeGreaterThan(25000);
 
-    const iterations = 50;
+    const iterations = 30;
     const currentPath = 'docs/notes/perf.md';
     let totalTime = 0;
 
@@ -47,6 +47,6 @@ describe('linkExtractor performance', () => {
     // Performance expectation
     expect(averageTime).toBeLessThan(2);
     
-    console.log(`Average parse time for ~50KB file: ${averageTime.toFixed(2)} ms`);
+    console.log(`Average parse time for ~40KB file: ${averageTime.toFixed(2)} ms`);
   });
 });

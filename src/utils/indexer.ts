@@ -1,6 +1,6 @@
-import { MarkdownFile } from '../context/FileContext';
+import type { MarkdownFile } from '../context/FileContext';
 import { parseMarkdownLinks } from './linkExtractor';
-import { GraphNode, GraphEdge, AdjacencyGraph } from '../types/graph';
+import type { GraphNode, GraphEdge, AdjacencyGraph } from '../types/graph';
 
 export async function buildAdjacencyGraph(files: MarkdownFile[]): Promise<AdjacencyGraph> {
     const nodes = new Map<string, GraphNode>();
