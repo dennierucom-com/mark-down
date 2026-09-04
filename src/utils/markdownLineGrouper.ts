@@ -52,7 +52,10 @@ export function groupMarkdownLines(content: string): MarkdownBlock[] {
     const startLine = i;
     let rawContent = line;
     i++;
-    while (i < lines.length && lines[i].trim() !== '' && !lines[i].trim().startsWith('```')) {
+    
+    // Prevent massive blocks that lag the editor during rendering/editing
+    const MAX_LINES = 100;
+    while (i < lines.length && lines[i].trim() !== '' && !lines[i].trim().startsWith('```') && (i - startLine) < MAX_LINES) {
       rawContent += '\n' + lines[i];
       i++;
     }
