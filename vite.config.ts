@@ -9,17 +9,31 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
+      workbox: {
+        navigateFallbackAllowlist: [/^\/mark-down\//],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: { maxEntries: 30, maxAgeSeconds: 365 * 24 * 60 * 60 },
+            },
+          },
+        ],
+      },
       manifest: {
         name: 'Mark South',
         short_name: 'Mark South',
+        lang: 'en',
         description: 'A simple Markdown editor',
         theme_color: '#6750A4', // M3 Seed Purple
         background_color: '#FFFBFE', // M3 Surface Light
         display: 'standalone',
         scope: '/mark-down/',
         start_url: '/mark-down/',
-        orientation: 'portrait',
+        orientation: 'any',
         icons: [
           {
             src: 'pwa-64x64.png',

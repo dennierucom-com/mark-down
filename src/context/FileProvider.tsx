@@ -12,9 +12,28 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
   ];
 
   const [files, setFiles] = useState<MarkdownFile[]>(() => {
-    const saved = localStorage.getItem("current_file");
-    if (!saved) return defaultFiles;
-    return defaultFiles; // We always want these in the workspace for demo purposes
+    let initialFiles = [...defaultFiles];
+    try {
+      const savedImported = localStorage.getItem("imported_files");
+      if (savedImported) {
+        const parsed = JSON.parse(savedImported) as MarkdownFile[];
+        initialFiles = [...initialFiles, ...parsed];
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    try {
+      const savedCurrent = localStorage.getItem("current_file");
+      if (savedCurrent) {
+        const parsed = JSON.parse(savedCurrent) as MarkdownFile;
+        if (!initialFiles.some((f) => f.name === parsed.name)) {
+          initialFiles.push(parsed);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return initialFiles;
   });
   const [isDirty, setIsDirty] = useState(false);
   const [currentFile, setCurrentFile] = useState<MarkdownFile | null>(() => {
@@ -47,6 +66,16 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
       });
     }
   }, [currentFile]);
+
+  useEffect(() => {
+    const importedFiles = files.filter((f) => f.isImported && f.name !== "Welcome.md" && f.name !== "Features.md");
+    const serializableFiles = importedFiles.map(f => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { handle, ...rest } = f as MarkdownFile;
+      return rest;
+    });
+    localStorage.setItem("imported_files", JSON.stringify(serializableFiles));
+  }, [files]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
