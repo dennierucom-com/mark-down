@@ -70,7 +70,8 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     const importedFiles = files.filter((f) => f.isImported && f.name !== "Welcome.md" && f.name !== "Features.md");
     const serializableFiles = importedFiles.map(f => {
-      const { handle, ...rest } = f as any;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { handle, ...rest } = f as MarkdownFile;
       return rest;
     });
     localStorage.setItem("imported_files", JSON.stringify(serializableFiles));

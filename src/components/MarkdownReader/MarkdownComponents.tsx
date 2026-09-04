@@ -37,6 +37,7 @@ export const useMarkdownComponents = (isElectricMode: boolean, onNavigate?: (fil
           )}
         </>
       );
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [text, searchTerm, theme.custom.search.highlight, theme.custom.search.highlightText]);
   };
 
