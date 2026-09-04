@@ -9,10 +9,13 @@ export const useMarkdownComponents = (isElectricMode: boolean, onNavigate?: (fil
   const theme = useTheme();
   const { searchTerm } = useSearch();
 
+  const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
   // Helper to highlight text
   const HighlightText = ({ text }: { text: string }) => {
     if (!searchTerm || !text) return <>{text}</>;
-    const parts = text.split(new RegExp(`(${searchTerm})`, "gi"));
+    const escaped = escapeRegExp(searchTerm);
+    const parts = text.split(new RegExp(`(${escaped})`, "gi"));
     return (
       <>
         {parts.map((part, i) =>
