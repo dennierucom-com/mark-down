@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeSlug from 'rehype-slug';
+import rehypeSanitize from 'rehype-sanitize';
 import remarkWikiLink from '../../utils/remarkWikiLink';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -141,7 +142,7 @@ export const MarkdownViewerBlock: React.FC<MarkdownViewerBlockProps> = React.mem
         )}
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkWikiLink]}
-          rehypePlugins={[rehypeHighlight, rehypeSlug]}
+          rehypePlugins={[rehypeSanitize, rehypeHighlight, rehypeSlug]}
           components={components}
         >
           {block.rawContent}
