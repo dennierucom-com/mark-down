@@ -13,29 +13,31 @@ export const useMarkdownComponents = (isElectricMode: boolean, onNavigate?: (fil
 
   // Helper to highlight text
   const HighlightText = ({ text }: { text: string }) => {
-    if (!searchTerm || !text) return <>{text}</>;
-    const escaped = escapeRegExp(searchTerm);
-    const parts = text.split(new RegExp(`(${escaped})`, "gi"));
-    return (
-      <>
-        {parts.map((part, i) =>
-          part.toLowerCase() === searchTerm.toLowerCase() ? (
-            <mark
-              key={i}
-              style={{
-                backgroundColor: theme.custom.search.highlight,
-                color: theme.custom.search.highlightText,
-                borderRadius: 2,
-              }}
-            >
-              {part}
-            </mark>
-          ) : (
-            part
-          )
-        )}
-      </>
-    );
+    return React.useMemo(() => {
+      if (!searchTerm || !text) return <>{text}</>;
+      const escaped = escapeRegExp(searchTerm);
+      const parts = text.split(new RegExp(`(${escaped})`, "gi"));
+      return (
+        <>
+          {parts.map((part, i) =>
+            part.toLowerCase() === searchTerm.toLowerCase() ? (
+              <mark
+                key={i}
+                style={{
+                  backgroundColor: theme.custom.search.highlight,
+                  color: theme.custom.search.highlightText,
+                  borderRadius: 2,
+                }}
+              >
+                {part}
+              </mark>
+            ) : (
+              part
+            )
+          )}
+        </>
+      );
+    }, [text, searchTerm, theme.custom.search.highlight, theme.custom.search.highlightText]);
   };
 
   const TextWrapper = ({ children }: { children: React.ReactNode }) => {
