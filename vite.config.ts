@@ -32,7 +32,7 @@ export default defineConfig({
         display: 'standalone',
         scope: '/mark-down/',
         start_url: '/mark-down/',
-        orientation: 'portrait',
+        orientation: 'any',
         icons: [
           {
             src: 'pwa-64x64.png',
