@@ -12,6 +12,16 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
       workbox: {
         navigateFallbackAllowlist: [/^\/mark-down\//],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: { maxEntries: 30, maxAgeSeconds: 365 * 24 * 60 * 60 },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'Mark South',
