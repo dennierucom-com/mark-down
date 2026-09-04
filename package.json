@@ -14,7 +14,8 @@
     "test:e2e": "playwright test",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "prepare": "husky"
+    "prepare": "husky",
+    "issues:create": "node scripts/create_issues.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

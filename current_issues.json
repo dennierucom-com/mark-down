@@ -1,0 +1,117 @@
+[
+  {
+    "number": 43,
+    "title": "PWA Audit: 4.2 (Low): Only `currentFile` is persisted — full file list is lost on refresh",
+    "body": "| | |\n|---|---|\n| **File** | [`FileProvider.tsx`](file:///d:/Workspace/mark_down/mark-down/src/context/FileProvider.tsx#L38-L49) |\n| **Lines** | 38–49 |\n| **Severity** | Low |\n\n**What's wrong:**  \nOnly `currentFile` is saved to `localStorage` (line 41). If a user has imported multiple files into the workspace, a browser refresh will lose all of them except the one that was currently selected. The `files` array is never persisted.\n\nThis is a design trade-off (keeping things simple), but it means users can lose work if they've opened multiple files via drag & drop or the file picker and then refresh.\n\n**Suggested fix — persist the full imported file list:**\n```diff\n useEffect(() => {\n   if (currentFile) {\n     const { ...fileToSave } = currentFile;\n     localStorage.setItem(\"current_file\", JSON.stringify(fileToSave));\n+\n+    // Persist all imported files so they survive refresh\n+    const importedFiles = files.filter((f) => f.isImported && f.name !== \"Welcome.md\" && f.name !== \"Features.md\");\n+    localStorage.setItem(\"imported_files\", JSON.stringify(importedFiles));\n   }\n }, [currentFile]);\n```\n\n> [!WARNING]\n> `FileSystemFileHandle` objects (stored on `MarkdownFile.handle`) are **not serializable** via `JSON.stringify()`. They will silently be dropped. This means handles cannot survive a refresh. You may want to strip `handle` before persisting to avoid confusion, and inform users that \"Save\" (via handle) requires re-opening the file after refresh.\n\n---\n\n## Summary of Recommended Actions\n\n| Priority | Issue | Fix Effort |\n|---|---|---|\n| 🟡 Moderate | 1.1 — Dev SW navigation allowlist too restrictive | Config change |\n| 🟡 Moderate | 1.2 — `mask-icon.svg` doesn't exist | Config fix |\n| 🟡 Moderate | 2.1 — `theme_color` mismatch (manifest vs. meta tag) | One-line HTML fix |\n| 🟡 Moderate | 2.2 — `orientation: 'portrait'` is too restrictive | Config change |\n| 🟡 Moderate | 3.1 — Unescaped `searchTerm` in `RegExp` (crash + ReDoS) | Small code fix |\n| 🟡 Moderate | 4.1 — `files` initializer ignores saved state (dead code) | Small code fix |\n| 🟢 Low | 1.3 — No runtime caching for external fonts | Config addition |\n| 🟢 Low | 2.3 — Missing explicit `lang` in manifest source | Config addition |\n| 🟢 Low | 3.2 — No `rehype-sanitize` (defensive, not currently exploitable) | npm install + config |\n| 🟢 Low | 4.2 — Only `currentFile` persisted, full list lost on refresh | Design decision |\n\n---\n\n> [!TIP]\n> **Positive findings:** No `dangerouslySetInnerHTML`, no `innerHTML` writes, no `eval()`, no `rehype-raw`. The `react-markdown` pipeline is configured safely by default. The production service worker correctly precaches all static assets including the JS bundle, icons, and manifest. The IndexedDB graph repository uses proper transactional writes with error recovery.\n\n---\n*Created automatically from the PWA Audit Report by Antigravity Agent.*"
+  },
+  {
+    "number": 42,
+    "title": "PWA Audit: 4.1 (Moderate): `files` state initializer reads `localStorage` but always discards the result",
+    "body": "| | |\n|---|---|\n| **File** | [`FileProvider.tsx`](file:///d:/Workspace/mark_down/mark-down/src/context/FileProvider.tsx#L14-L18) |\n| **Lines** | 14–18 |\n| **Severity** | Moderate |\n\n**What's wrong:**  \nThe `files` state initializer reads `localStorage.getItem(\"current_file\")` but ignores its value entirely — both branches return the same `defaultFiles`. The saved file is never restored into the `files` array on page load. This means:\n\n1. If a user imports a file, edits it, and refreshes — the `currentFile` is restored (via the separate initializer on line 20), but it won't appear in the sidebar's file list because `files` was reset to defaults only.\n2. The `useEffect` on line 38 partially compensates by appending `currentFile` to `files` if it's not already present, but this only runs _after_ the initial render, causing a flash where the sidebar shows only default files.\n\n```tsx\n// Current (FileProvider.tsx:14-18)\nconst [files, setFiles] = useState<MarkdownFile[]>(() => {\n  const saved = localStorage.getItem(\"current_file\");\n  if (!saved) return defaultFiles;\n  return defaultFiles; // ← dead code: same value regardless of `saved`\n});\n```\n\n**Suggested fix — restore the current file into the initial file list:**\n```diff\n const [files, setFiles] = useState<MarkdownFile[]>(() => {\n   const saved = localStorage.getItem(\"current_file\");\n-  if (!saved) return defaultFiles;\n-  return defaultFiles;\n+  if (!saved) return defaultFiles;\n+  try {\n+    const parsed = JSON.parse(saved) as MarkdownFile;\n+    // If the saved file is already in defaults, no need to duplicate\n+    if (defaultFiles.some((f) => f.name === parsed.name)) {\n+      return defaultFiles;\n+    }\n+    return [...defaultFiles, parsed];\n+  } catch {\n+    return defaultFiles;\n+  }\n });\n```\n\n---\n\n---\n*Created automatically from the PWA Audit Report by Antigravity Agent.*"
+  },
+  {
+    "number": 41,
+    "title": "PWA Audit: 3.2 (Low): No `rehype-sanitize` plugin — raw HTML passthrough is not a current risk but is fragile",
+    "body": "| | |\n|---|---|\n| **File** | [`MarkdownViewerBlock.tsx`](file:///d:/Workspace/mark_down/mark-down/src/components/MarkdownReader/MarkdownViewerBlock.tsx#L142-L148) |\n| **Line** | 142–148 |\n| **Severity** | Low (informational) |\n\n**What's wrong:**  \nThe `react-markdown` rendering pipeline uses `remarkGfm`, `rehypeHighlight`, and `rehypeSlug`, but does **not** include `rehype-raw`. This means raw HTML in markdown input (e.g., `<script>alert(1)</script>`) is currently stripped by `react-markdown`'s default behavior. **This is correct and safe.**\n\nHowever, if a future developer adds `rehype-raw` to support embedded HTML (a common feature request for markdown editors), XSS would immediately become possible because there is no `rehype-sanitize` in the plugin chain.\n\n**Suggested defensive fix — add `rehype-sanitize` proactively:**\n```bash\nnpm install rehype-sanitize\n```\n```diff\n import rehypeHighlight from 'rehype-highlight';\n import rehypeSlug from 'rehype-slug';\n+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';\n\n <ReactMarkdown\n   remarkPlugins={[remarkGfm, remarkWikiLink]}\n-  rehypePlugins={[rehypeHighlight, rehypeSlug]}\n+  rehypePlugins={[rehypeSanitize, rehypeHighlight, rehypeSlug]}\n   components={components}\n >\n```\n\n> [!IMPORTANT]\n> If you add `rehype-sanitize`, make sure it runs **before** `rehypeHighlight` in the pipeline, or it will strip the `class` attributes that highlight.js injects. You may need a custom schema that allows `class` on `code` and `span` elements.\n\n---\n\n## Category 4 — Local Storage Persistence\n\n---\n*Created automatically from the PWA Audit Report by Antigravity Agent.*"
+  },
+  {
+    "number": 40,
+    "title": "PWA Audit: 3.1 (Moderate): Unsanitized `searchTerm` used in `new RegExp()` — ReDoS and crash vector",
+    "body": "| | |\n|---|---|\n| **File** | [`MarkdownComponents.tsx`](file:///d:/Workspace/mark_down/mark-down/src/components/MarkdownReader/MarkdownComponents.tsx#L15) |\n| **Line** | 15 |\n| **Severity** | Moderate |\n\n**What's wrong:**  \nThe `HighlightText` component uses the raw `searchTerm` from user input directly inside `new RegExp(...)` without escaping regex special characters. If a user types a search term like `(`, `[`, `*`, or `(?=`, the `RegExp` constructor will throw a `SyntaxError`, crashing the entire component tree (React error boundary). Certain patterns like `(a+)+$` applied to long text can also cause catastrophic backtracking (ReDoS), freezing the UI.\n\n```tsx\n// Current (MarkdownComponents.tsx:15)\nconst parts = text.split(new RegExp(`(${searchTerm})`, \"gi\"));\n//                                    ^^^^^^^^^^^^  raw user input\n```\n\n**Suggested fix — escape regex special characters:**\n```diff\n+ function escapeRegExp(str: string): string {\n+   return str.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n+ }\n+\n  const HighlightText = ({ text }: { text: string }) => {\n    if (!searchTerm || !text) return <>{text}</>;\n-   const parts = text.split(new RegExp(`(${searchTerm})`, \"gi\"));\n+   const escaped = escapeRegExp(searchTerm);\n+   const parts = text.split(new RegExp(`(${escaped})`, \"gi\"));\n```\n\n---\n\n---\n*Created automatically from the PWA Audit Report by Antigravity Agent.*"
+  },
+  {
+    "number": 39,
+    "title": "PWA Audit: 2.3 (Low): Missing `lang` property in source manifest config",
+    "body": "| | |\n|---|---|\n| **File** | [`vite.config.ts`](file:///d:/Workspace/mark_down/mark-down/vite.config.ts#L13-L46) |\n| **Line** | 13–46 |\n| **Severity** | Low |\n\n**What's wrong:**  \nThe manifest config in `vite.config.ts` does not include a `lang` field. The production manifest does include `\"lang\":\"en\"` — this appears to be auto-injected by the plugin. However, it's best practice to declare it explicitly in the source to ensure consistency and clarity.\n\n**Suggested fix:**\n```diff\n manifest: {\n   name: 'Mark South',\n   short_name: 'Mark South',\n+  lang: 'en',\n   description: 'A simple Markdown editor',\n```\n\n---\n\n## Category 3 — HTML Injection / XSS Risks\n\n---\n*Created automatically from the PWA Audit Report by Antigravity Agent.*"
+  },
+  {
+    "number": 38,
+    "title": "PWA Audit: 2.2 (Moderate): `orientation: 'portrait'` prevents landscape use on tablets/desktop",
+    "body": "| | |\n|---|---|\n| **File** | [`vite.config.ts`](file:///d:/Workspace/mark_down/mark-down/vite.config.ts#L22) |\n| **Line** | 22 |\n| **Severity** | Moderate |\n\n**What's wrong:**  \nThe manifest sets `orientation: 'portrait'`. For a markdown editor — which benefits greatly from wide screens — this locks the installed PWA to portrait mode on devices that respect this hint (e.g., Android). Desktop Chrome typically ignores this, but mobile Chrome and Samsung Internet enforce it.\n\n**Suggested fix:**\n```diff\n- orientation: 'portrait',\n+ orientation: 'any',\n```\n\n---\n\n---\n*Created automatically from the PWA Audit Report by Antigravity Agent.*"
+  },
+  {
+    "number": 37,
+    "title": "PWA Audit: 2.1 (Moderate): `theme_color` mismatch between manifest and `index.html`",
+    "body": "| | |\n|---|---|\n| **Files** | [`vite.config.ts`](file:///d:/Workspace/mark_down/mark-down/vite.config.ts#L17) and [`index.html`](file:///d:/Workspace/mark_down/mark-down/index.html#L7) |\n| **Lines** | `vite.config.ts:17` / `index.html:7` |\n| **Severity** | Moderate |\n\n**What's wrong:**  \nThe manifest defines `theme_color: '#6750A4'` (M3 purple), but `index.html` has `<meta name=\"theme-color\" content=\"#ffffff\">`. Chrome and other browsers will use the `<meta>` tag on initial load and the manifest value after install, resulting in an inconsistent status bar / title bar color. This can also cause Lighthouse PWA audits to flag a mismatch.\n\n```html\n<!-- index.html:7 — white -->\n<meta name=\"theme-color\" content=\"#ffffff\" />\n```\n```js\n// vite.config.ts:17 — purple\ntheme_color: '#6750A4',\n```\n\n**Suggested fix in** [`index.html`](file:///d:/Workspace/mark_down/mark-down/index.html#L7):\n```diff\n- <meta name=\"theme-color\" content=\"#ffffff\" />\n+ <meta name=\"theme-color\" content=\"#6750A4\" />\n```\n\n---\n\n---\n*Created automatically from the PWA Audit Report by Antigravity Agent.*"
+  },
+  {
+    "number": 36,
+    "title": "PWA Audit: 1.3 (Low): No runtime caching strategy for Google Fonts or external CDN resources",
+    "body": "| | |\n|---|---|\n| **File** | [`vite.config.ts`](file:///d:/Workspace/mark_down/mark-down/vite.config.ts#L10-L51) |\n| **Line** | 10–51 |\n| **Severity** | Low |\n\n**What's wrong:**  \nThe [`MarkdownComponents.tsx`](file:///d:/Workspace/mark_down/mark-down/src/components/MarkdownReader/MarkdownComponents.tsx#L122) references font families like `JetBrains Mono, Fira Code` in its CSS. If these fonts are loaded from an external CDN (e.g., Google Fonts), there is no `runtimeCaching` rule in the Workbox config to cache them. This means font rendering will break when offline.\n\n**Suggested fix — add runtime caching for font resources:**\n```diff\n VitePWA({\n   registerType: 'autoUpdate',\n+  workbox: {\n+    runtimeCaching: [\n+      {\n+        urlPattern: /^https:\\/\\/fonts\\.(?:googleapis|gstatic)\\.com\\/.*/i,\n+        handler: 'CacheFirst',\n+        options: {\n+          cacheName: 'google-fonts',\n+          expiration: { maxEntries: 30, maxAgeSeconds: 365 * 24 * 60 * 60 },\n+        },\n+      },\n+    ],\n+  },\n```\n\n> [!NOTE]\n> If these fonts are only used as CSS `font-family` fallbacks and never explicitly loaded via `@import` or `<link>`, this is cosmetic. Verify your actual font loading strategy.\n\n---\n\n## Category 2 — Web App Manifest\n\n---\n*Created automatically from the PWA Audit Report by Antigravity Agent.*"
+  },
+  {
+    "number": 35,
+    "title": "PWA Audit: 1.2 (Moderate): `includeAssets` references non-existent `mask-icon.svg`",
+    "body": "| | |\n|---|---|\n| **File** | [`vite.config.ts`](file:///d:/Workspace/mark_down/mark-down/vite.config.ts#L12) |\n| **Line** | 12 |\n| **Severity** | Moderate |\n\n**What's wrong:**  \nThe `includeAssets` array references `'mask-icon.svg'`, but the `public/` directory contains `icon.svg` — there is no file named `mask-icon.svg`. This means vite-plugin-pwa will fail to inject this asset into the precache manifest, and the asset won't be available offline.\n\n```js\n// Current (vite.config.ts:12)\nincludeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],\n//                                                       ^^^^^^^^^^^^^^ does not exist\n```\n\n**Available files in `public/`:** `apple-touch-icon.png`, `favicon.ico`, `icon.svg`, `maskable-icon-512x512.png`, `pwa-192x192.png`, `pwa-512x512.png`, `pwa-64x64.png`, `vite.svg`\n\n**Suggested fix:**\n```diff\n- includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],\n+ includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],\n```\n\n---\n\n---\n*Created automatically from the PWA Audit Report by Antigravity Agent.*"
+  },
+  {
+    "number": 34,
+    "title": "PWA Audit: 1.1 (Moderate): Dev service worker `NavigationRoute` allowlist blocks all non-root navigation",
+    "body": "| | |\n|---|---|\n| **File** | [`dev-dist/sw.js`](file:///d:/Workspace/mark_down/mark-down/dev-dist/sw.js#L88-L90) |\n| **Line** | 88–89 |\n| **Severity** | Moderate |\n\n**What's wrong:**  \nThe dev service worker registers a `NavigationRoute` with `allowlist: [/^\\/$/]`, which only matches the literal root path `/`. Because the app is served at `base: '/mark-down/'`, navigating to `/mark-down/` does **not** match `/^\\/$/ `. This means navigation requests in dev mode will not be served from the cache, breaking offline mode entirely during local development.\n\n```js\n// Current (dev-dist/sw.js:88-89)\nworkbox.registerRoute(new workbox.NavigationRoute(\n  workbox.createHandlerBoundToURL(\"index.html\"),\n  { allowlist: [/^\\/$/] }  // ← only matches \"/\"\n));\n```\n\n> [!TIP]\n> The production `dist/sw.js` does **not** set an `allowlist`, so this is dev-only. However, it makes it impossible to test offline mode locally.\n\n**Suggested fix in** [`vite.config.ts`](file:///d:/Workspace/mark_down/mark-down/vite.config.ts):  \nAdd a `navigateFallbackAllowlist` under `workbox` options that matches the base path:\n\n```diff\n VitePWA({\n   registerType: 'autoUpdate',\n   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],\n+  workbox: {\n+    navigateFallbackAllowlist: [/^\\/mark-down\\//],\n+  },\n   manifest: {\n```\n\n---\n\n---\n*Created automatically from the PWA Audit Report by Antigravity Agent.*"
+  },
+  {
+    "number": 33,
+    "title": "Missing explicit `lang` property in source manifest config",
+    "body": "* **File:** `vite.config.ts`\n* **Description:** Best practice is to explicitly declare the `lang: 'en'` attribute in the PWA manifest source config.\n* **Suggested Fix:** Add `lang: 'en'` to the `manifest` object in `vite.config.ts`.\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 32,
+    "title": "No `rehype-sanitize` plugin in markdown rendering pipeline",
+    "body": "* **File:** `src/components/MarkdownReader/MarkdownViewerBlock.tsx`\n* **Description:** The app currently strips raw HTML safely by default because `rehype-raw` is omitted. However, if a future developer adds `rehype-raw` to support embedded HTML blocks (a common markdown request), the app immediately becomes vulnerable to XSS.\n* **Suggested Fix:** Proactively install and configure `rehype-sanitize` in the pipeline as a defensive measure.\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 31,
+    "title": "No runtime caching strategy for external CDN resources",
+    "body": "* **File:** `vite.config.ts`\n* **Description:** The app uses custom font families. If they are fetched from external CDNs (like Google Fonts) rather than bundled, they will break in offline mode because the workbox config only precaches internal assets.\n* **Suggested Fix:** Add a `runtimeCaching` rule in `vite.config.ts` for external font domains.\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 30,
+    "title": "Imported workspace file list is completely lost on refresh",
+    "body": "* **File:** `src/context/FileProvider.tsx:38-49`\n* **Description:** Currently, only the single `currentFile` is persisted to `localStorage`. If a user imports 5 different markdown files into their workspace and refreshes, 4 of them are permanently lost.\n* **Suggested Fix:** Serialize and save the entire array of imported files (excluding un-serializable `FileSystemFileHandle` properties) so the workspace survives a refresh.\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 29,
+    "title": "Heavy multi-line pastes result in massive, slow-rendering blocks",
+    "body": "* **Description:** If a user pastes a massive multiline element (like a 500-row markdown table) into the editor, the `markdownLineGrouper` lumps it into a single `MarkdownBlock`. React struggles to re-render this massive block during edits.\n* **Suggested Fix:** Refine the chunking algorithm to handle extremely large blocks better, or implement block virtualization.\n\n---\n\n## 🟢 Low Priority / Technical Debt\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 28,
+    "title": "Un-memoized Search Highlights cause rendering lag on large documents",
+    "body": "* **Description:** During runtime testing, typing into the active search bar recalculates the `RegExp` pattern and executes `split()` across every single rendered markdown text node on every keystroke. On heavy documents, this blocks the main thread and introduces visible typing lag.\n* **Suggested Fix:** Memoize the highlight logic, debounce the search input state, or apply highlights to a virtualized list.\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 27,
+    "title": "PWA manifest locks orientation to portrait mode",
+    "body": "* **File:** `vite.config.ts:22`\n* **Description:** The manifest configures `orientation: 'portrait'`. This is highly restrictive for a markdown editor, which is often used in landscape on tablets and foldables.\n* **Suggested Fix:** Change to `orientation: 'any'`.\n\n---\n\n## 🔵 Performance & UX Enhancements\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 26,
+    "title": "Dev Service Worker `NavigationRoute` blocks all non-root navigation",
+    "body": "* **File:** `vite.config.ts` (affects `dev-dist/sw.js`)\n* **Description:** In dev mode, the service worker registers an allowlist `[/^\\/$/]` which only matches the exact root path `/`. Because the app runs on `base: '/mark-down/'`, navigating to the app bypasses the cache, completely breaking offline mode during local development.\n* **Suggested Fix:** Add `workbox: { navigateFallbackAllowlist: [/^\\/mark-down\\//] }` to the `VitePWA` config.\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 25,
+    "title": "`includeAssets` references a non-existent `mask-icon.svg`",
+    "body": "* **File:** `vite.config.ts:12`\n* **Description:** The Vite PWA config attempts to precache `mask-icon.svg`, but the `public/` directory contains `icon.svg` instead. The asset fails to cache.\n* **Suggested Fix:** Rename the reference in `vite.config.ts` from `mask-icon.svg` to `icon.svg`.\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 24,
+    "title": "PWA `theme_color` mismatch between manifest and HTML meta tag",
+    "body": "* **File:** `vite.config.ts:17` & `index.html:7`\n* **Description:** The PWA manifest dictates a `theme_color` of `#6750A4` (M3 Purple), but `index.html` hardcodes `<meta name=\"theme-color\" content=\"#ffffff\" />`. This leads to inconsistent status bar coloring and triggers warnings in Lighthouse PWA audits.\n* **Suggested Fix:** Update the `<meta>` tag in `index.html` to `#6750A4`.\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 23,
+    "title": "`files` state initializer ignores saved localStorage data",
+    "body": "* **File:** `src/context/FileProvider.tsx:14-18`\n* **Description:** The initial state for `files` reads `localStorage.getItem(\"current_file\")` but contains dead code that always returns `defaultFiles` regardless of what was saved. As a result, imported files vanish from the sidebar on page refresh.\n* **Suggested Fix:** Parse the saved `currentFile` and append it to the `defaultFiles` array in the state initializer if it doesn't already exist.\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 22,
+    "title": "App crashes to white screen on invalid Regex in search bar (XSS/ReDoS vector)",
+    "body": "* **File:** `src/components/MarkdownReader/MarkdownComponents.tsx:15`\n* **Description:** The `searchTerm` is passed directly into a `new RegExp()` constructor inside `HighlightText` without escaping special characters. If a user types `(`, `[`, or `(?=` into the \"Find in page\" field, it throws an uncaught `SyntaxError: Invalid regular expression`. Because there is no Error Boundary around the viewer, this crashes the entire React tree and leaves a blank white screen. Maliciously crafted regex patterns could also trigger catastrophic backtracking (ReDoS).\n* **Suggested Fix:** Add a regex escaping utility function `str.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')` and apply it to the `searchTerm` before instantiating the `RegExp`.\n\n---\n\n## 🟡 Moderate Priority / Bug Fixes\n\n---\n*Created automatically from the consolidated audit report.*"
+  },
+  {
+    "number": 14,
+    "title": "Feature/versioning",
+    "body": null
+  }
+]
