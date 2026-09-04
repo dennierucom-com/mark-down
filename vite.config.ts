@@ -26,6 +26,7 @@ export default defineConfig({
       manifest: {
         name: 'Mark South',
         short_name: 'Mark South',
+        lang: 'en',
         description: 'A simple Markdown editor',
         theme_color: '#6750A4', // M3 Seed Purple
         background_color: '#FFFBFE', // M3 Surface Light
