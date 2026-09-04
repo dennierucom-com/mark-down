@@ -10,6 +10,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      workbox: {
+        navigateFallbackAllowlist: [/^\/mark-down\//],
+      },
       manifest: {
         name: 'Mark South',
         short_name: 'Mark South',
